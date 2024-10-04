@@ -1,13 +1,8 @@
-const asyncHandeler =(fn)=>async(req,res,next)=>{
+const asyncHandeler = (requestHandler)=>{
 
-    try {
-        
-    } catch (error) {
-        res.status(Err.code || 500).json({
-            success:false,
-            message:Err.message
-        })
-    }
+  return (req,res,next)=>{
 
-}
-export {asyncHandeler};
+  Promise.resolve(requestHandler(req,res,next)).catch((err)=>next(err));
+
+  }}
+export {asyncHandeler}
