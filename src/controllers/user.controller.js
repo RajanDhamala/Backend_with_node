@@ -48,7 +48,7 @@ const registerUser = asyncHandeler(async (req, res) => {
 
     console.log("user is",user)
 
-    const createdUser = await User.findById(createdUser._id).select("-password -refreshToken");
+    const createdUser = await User.findById(user._id).select("-password -refreshToken");
 
    
 
