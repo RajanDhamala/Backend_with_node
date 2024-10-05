@@ -33,6 +33,7 @@ const registerUser = asyncHandeler(async (req, res) => {
     const avatar=await uploadOnCloudinary(avatarlocalpath);
     const coverImage=await uploadOnCloudinary(coverImageLocalPath);
 
+
     if(!avatar){
         throw new ApiError(500,"Failed to upload avatar image")
     }
@@ -47,10 +48,11 @@ const registerUser = asyncHandeler(async (req, res) => {
     })
 
     console.log("user is",user)
+    console.log("file data",req.files )
+    console.log("req body data" ,req.body)
 
     const createdUser = await User.findById(user._id).select("-password -refreshToken");
 
-   
 
     if(!createdUser){
         throw new ApiError(500,"something went wrong while regestering user")
