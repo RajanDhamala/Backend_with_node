@@ -46,6 +46,7 @@ const registerUser = asyncHandeler(async (req, res) => {
         password,
         username:username.toLowerCase()
     })
+    
 
     console.log("user is",user)
     console.log("file data",req.files )
