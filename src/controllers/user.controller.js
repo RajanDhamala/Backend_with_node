@@ -27,7 +27,6 @@ const generateAccessAndRefreshToken= async (userId)=>{
    }
 }
 
-
 const registerUser = asyncHandeler(async (req, res) => {
     const { fullName, email, username, password } = req.body;
     console.log("email is", email);
@@ -97,8 +96,6 @@ const registerUser = asyncHandeler(async (req, res) => {
         new ApiResponse(200, createdUser, "User registered successfully")
     );
 });
-
-
 
 const loginUser=asyncHandeler (async(req,res)=>{
     //re body se data lao
@@ -214,10 +211,142 @@ const refreshAccessToken=asyncHandeler(async(req,res)=>{
 }
 )
 
+const changeCurrentPassword=asyncHandeler(async(req,res)=>{
+    const {oldPassword,newPassword}=req.body;
 
+    if(!oldPassword || !newPassword){
+        throw new ApiError(400,"Please provide current and new password")
+    }
+
+    const user=await user.findById(req.user._id)
+    const isPasswordCorrect=await user.isPasswordCorrect(oldPassword)
+
+    if (!isPasswordCorrect){
+        throw new ApiError(401,"Invalid password")
+    }
+
+    user.password=newPassword
+    await user.save({validateBeforeSave:false})
+
+    return res.
+    status(200).
+    json(
+        new ApiResponse(200 ,{},"password changed successfully")
+    )  
+})
+
+const getCurrentUser=asyncHandeler(async(req,res)=>{
+    return res.status(200).$orjson(
+        200,req.user ,"current fetched successfully"
+    )
+})
+
+const updateAccountDetails=asyncHandeler(async(req,res)=>{
+    const {fullName,email}=req.body;
+
+    if(!fullName || !email){
+        throw new ApiError(400,"Please provide full name and email")
+    }
+    const user=User.findByIdAndUpdate(
+        req.user?._id
+    ,{
+        $set:{
+            fullName,
+            email:email
+        }
+    }
+,{new:true}).select("-password")//returns data after update
+    
+return res.status(200).json(
+    new ApiResponse(
+        200,user,"Account details updated successfully"
+    )
+)
+});
+
+const updateUserAvatar = asyncHandeler(async (req, res) => {
+    // Extract the local path of the uploaded avatar image
+    const avatarLocalPath = req.file?.path;
+
+    // Check if the avatar image is provided
+    if (!avatarLocalPath) {
+        throw new ApiError(400, "Please provide an avatar image");
+    }
+
+    // Upload the avatar image to Cloudinary
+    const avatar = await uploadOnCloudinary(avatarLocalPath);
+
+    // Check if the avatar upload was successful
+    if (!avatar.url) {
+        throw new ApiError(500, "Error while uploading avatar");
+    }
+
+    // Update the user's avatar URL in the database
+    const updatedUser = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                avatar: avatar.url
+            }
+        },
+        {
+            new: true
+        }
+    ).select("-password");
+
+    // Respond with a success message
+    return res.status(200).json(
+        new ApiResponse(
+            200, updatedUser, "Avatar updated successfully"
+        )
+    );
+});
+
+const updateUserCoverImage = asyncHandeler(async (req, res) => {
+    // Extract the local path of the uploaded cover image
+    const coverImageLocalPath = req.file?.path;
+
+    // Check if the cover image is provided
+    if (!coverImageLocalPath) {
+        throw new ApiError(400, "Please provide a cover image");
+    }
+
+    // Upload the cover image to Cloudinary
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+
+    // Check if the cover image upload was successful
+    if (!coverImage.url) {
+        throw new ApiError(500, "Error while uploading cover image");
+    }
+
+    // Update the user's cover image URL in the database
+    const updatedUser = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                coverImage: coverImage.url
+            }
+        },
+        {
+            new: true
+        }
+    ).select("-password");
+
+    // Respond with a success message
+    return res.status(200).json(
+        new ApiResponse(
+            200, updatedUser, "Cover image updated successfully"
+        )
+    );
+});
 
 export { registerUser
     ,loginUser
     ,logoutUser
     ,refreshAccessToken
+    ,getCurrentUser,
+    changeCurrentPassword
+    ,updateUserAvatar
+    ,updateUserCoverImage
  };
+ 
