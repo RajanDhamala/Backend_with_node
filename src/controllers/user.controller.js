@@ -12,7 +12,6 @@ const generateAccessAndRefreshToken= async (userId)=>{
         if (!user) {
             throw new ApiError(404, "User not found");
         }
-
         // Generate access and refresh tokens using the user model methods
         const accessToken = user.generateAccessToken();
         const refreshToken = user.generateRefreshToken();
