@@ -214,11 +214,13 @@ const refreshAccessToken=asyncHandeler(async(req,res)=>{
 const changeCurrentPassword=asyncHandeler(async(req,res)=>{
     const {oldPassword,newPassword}=req.body;
 
+    console.log("old password is",oldPassword,"new password is",newPassword);
+
     if(!oldPassword || !newPassword){
         throw new ApiError(400,"Please provide current and new password")
     }
 
-    const user=await user.findById(req.user._id)
+    const user=await User.findById(req.user._id)
     const isPasswordCorrect=await user.isPasswordCorrect(oldPassword)
 
     if (!isPasswordCorrect){
@@ -348,5 +350,6 @@ export { registerUser
     changeCurrentPassword
     ,updateUserAvatar
     ,updateUserCoverImage
+    ,updateAccountDetails
  };
  

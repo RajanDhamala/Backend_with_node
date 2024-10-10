@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import {User} from '../models/user.model.js'
 export const verifyJWt=asyncHandeler(async(req,res,next)=>{
    try {
-     const token=req.cookkies?.accessToken || req.header("Authorization")?.replace("Bearer ","")
+     const token=req.cookkie?.accessToken || req.header("Authorization")?.replace("Bearer ","")
  
      if (!token) {
          throw new ApiError(401, "Unouthorized request")
