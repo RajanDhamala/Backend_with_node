@@ -343,6 +343,25 @@ const updateUserCoverImage = asyncHandeler(async (req, res) => {
 
 
 const getUserChannelProfile=asyncHandeler(async(req,res)=>{
+    const {username}=req.params
+
+    if(!username){
+        throw new ApiError(400,"Please provide a username")
+    }
+
+    const channel= await User.aggregate([{
+        $match:{
+            username:username?.toLowerCase()
+        }
+    },{
+            $lookup:{
+                from:"subscriptions",
+                localField:"_id",
+                foreignField:"channel",
+                as:"subscribers"
+            }
+        }
+    ]) 
 
 
 })
