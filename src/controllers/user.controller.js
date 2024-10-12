@@ -396,7 +396,15 @@ const getUserChannelProfile=asyncHandeler(async(req,res)=>{
         }
     ]) 
 
+if (!channel?.length()){
+    throw new ApiError(404,"channel does not exist")
+}
+return res
+.status(100)
+.json(
+    new ApiResponse(200,channel[0],"Channel profile fetched successfully")
 
+)
 })
 
 export { registerUser
