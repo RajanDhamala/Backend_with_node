@@ -438,6 +438,12 @@ const getWatchHistory=asyncHandeler(async(req,res)=>{
                 }
 
             }
+        },{
+            $addFields:{
+                owner:{
+                    $arrayElemAt:["$owner",0]
+                }
+            }
         }
     ])
 
