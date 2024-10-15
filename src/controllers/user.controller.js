@@ -397,25 +397,30 @@ const getUserChannelProfile=asyncHandeler(async(req,res)=>{
     ]) 
 
 if (!channel?.length()){
-    throw new ApiError(404,"channel does not exist")
+    throw new ApiError(404,"channel does not exist");
 }
 return res
 .status(100)
 .json(
     new ApiResponse(200,channel[0],"Channel profile fetched successfully")
-
 )
+})
+
+const getWatchHistory=asyncHandeler(async(req,res)=>{
+
+
 })
 
 export { registerUser
     ,loginUser
     ,logoutUser
     ,refreshAccessToken
-    ,getCurrentUser,
-    changeCurrentPassword
+    ,getCurrentUser
+    ,changeCurrentPassword
     ,updateUserAvatar
     ,updateUserCoverImage
     ,updateAccountDetails
     ,getUserChannelProfile
+    ,getWatchHistory
  };
  
