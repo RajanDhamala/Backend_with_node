@@ -29,5 +29,8 @@ router.route("/register").post(
 
     router.route("/change-password").post(verifyJWt,changeCurrentPassword);
 
+    router.route("/current-user").get(verifyJWt,getCurrentUser);
+    
+
 
 export default router;
