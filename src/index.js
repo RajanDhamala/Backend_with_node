@@ -90,3 +90,7 @@ app.get("/try", (req, res) => {
         console.log('Password   :', password);
 });
 
+app.post("/data", (req, res) => {
+    const { email, password } = req.body;
+    console.log('Email:', email);
+    console.log('Password:', password); });
