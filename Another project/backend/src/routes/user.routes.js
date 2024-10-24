@@ -18,9 +18,3 @@ route.get("/changePassword", changePassword);
 route.get("/deleteAccount", deleteAccount);
 
 export default route;
-
-
-
-
-
-//joshepgosh:XnJq5gK8BcVRci8G@cluster0.muz1t.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
