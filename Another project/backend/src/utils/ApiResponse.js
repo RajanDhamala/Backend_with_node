@@ -1,4 +1,4 @@
-class ApiResopnse{
+class ApiResponse{
     constructor (statusCode , message, data, success="true"){
         this.statusCode=statusCode;
         this.message=message;
