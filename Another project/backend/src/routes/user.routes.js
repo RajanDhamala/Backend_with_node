@@ -1,13 +1,16 @@
 import express from "express";
 
 import { getJokes, getUser, changeUsername,changePassword,
-deleteAccount } from "../controllers/user.controller.js";
+deleteAccount,registerUser } from "../controllers/user.controller.js";
 
 const route=express.Router();
 
 route.get("/",(req,res)=>{
     res.send("Hello World");
 })
+
+
+route.post("/register", registerUser);
 route.get("/jokes", getJokes);
 route.get("/user", getUser);
 route.get("/changeUsername", changeUsername);
@@ -18,3 +21,6 @@ export default route;
 
 
 
+
+
+//joshepgosh:XnJq5gK8BcVRci8G@cluster0.muz1t.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0

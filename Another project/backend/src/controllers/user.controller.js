@@ -16,26 +16,32 @@ const getJokes = asyncHandler(async (req, res) => {
     ][Math.floor(Math.random() * 10)])); // Example response
 });
 
-const getUser = (req, res) => {
+const getUser = asyncHandler(async (req, res) => {
     // Function implementation here
-};
+});
 
-const changeUsername = (req, res) => {
+const changeUsername = asyncHandler(async (req, res) => {
     // Function implementation here
-};
+});
 
-const changePassword = (req, res) => {
+const changePassword = asyncHandler(async (req, res) => {
     // Function implementation here
-};
+});
 
-const deleteAccount = (req, res) => {
+const deleteAccount = asyncHandler(async (req, res) => {
     // Function implementation here
-};
+});
+
+const registerUser = asyncHandler(async (req, res) => {
+   const [username,password,fullname,email]=req.body;
+});
+
 
 export{
     getJokes,
     getUser,
     changeUsername,
     changePassword,
-    deleteAccount
+    deleteAccount,
+    registerUser
 };

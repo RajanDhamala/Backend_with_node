@@ -1,24 +1,20 @@
-import express from "express";
+import connectDb from "./src/database/index.js";
 import dotenv from "dotenv";
-import cors from "cors";
-import userRouter from "./src/routes/user.routes.js"; // Ensure this path is correct
+import app from "./app.js";
 
 dotenv.config();
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+connectDb()
+.then(()=>{
+    app.listen(process.env.PORT,()=>{
+        console.log(`Server is running on port ${process.env.PORT}`);
+    })
+}).catch((error)=>{
+    console.log("Error while connecting to database",error);
+    process.exit(1);
+})
 
-// Middleware to parse JSON request bodies
-app.use(express.json()); // Important for handling POST requests
-app.use(cors())
+app.get("/",(req,res)=>{    
+    res.send("Hello World");});
 
-app.get("/", (req, res) => {
-    res.send("Hello World");
-});
-
-// Mount the user router with the prefix "/users"
-app.use("/users", userRouter);
-
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+;
