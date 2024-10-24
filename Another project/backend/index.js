@@ -1,18 +1,24 @@
-import express from "express"
-import dotenv from "dotenv"
-import route from "./src/routes/user.routes";
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import userRouter from "./src/routes/user.routes.js"; // Ensure this path is correct
+
 dotenv.config();
-const app=express();
-const PORT=process.env.PORT || 3000;
 
-app.get("/",(req,res)=>{
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware to parse JSON request bodies
+app.use(express.json()); // Important for handling POST requests
+app.use(cors())
+
+app.get("/", (req, res) => {
     res.send("Hello World");
-})
+});
 
-app.get("/url",(req,res)=>{
-    res.send("About Us");
-})
+// Mount the user router with the prefix "/users"
+app.use("/users", userRouter);
 
-app.listen(PORT,()=>{
+app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
-})
+});
