@@ -4,9 +4,10 @@ import './index.css'
 import Login from './Login'
 import Ui from './Ui'
 import GetJokes from './componnets/GetJokes'
+import RegisterUser from './componnets/RegisterUser'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <GetJokes />
+    <RegisterUser />
   </StrictMode>,
 )
