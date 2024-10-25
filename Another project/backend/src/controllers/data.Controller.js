@@ -2,7 +2,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import User from "../models/user.model.js"
 import bcrypt from "bcrypt";
-import express from "express";
+
 
 const registerUser=asyncHandler(async(req,res)=>{
     const {username,email,password,fullname}=req.body;
@@ -92,10 +92,24 @@ const changeUsername=asyncHandler(async(req,res)=>{
     );
 })
 
- 
+const uploadImg=asyncHandler(async(req,res)=>{
+    
+    const {username,ProfileImage}=req.body;
 
+    console.log(username,ProfileImage);
+
+    if(!username || !ProfileImage){
+        return res.json(
+        new ApiResponse(400, "Please provide a username")
+        )
+    }
+
+})
+
+ 
 export {
     registerUser,
     loginUser,
-    changeUsername
+    changeUsername,
+    uploadImg
 }
