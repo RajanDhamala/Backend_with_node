@@ -13,7 +13,8 @@ route.get("/",(req,res)=>{
 
 route.post("/register", registerUser);
 route.post("/login", loginUser);
-route.post('/uploadImg', upload.single('ProfileImage'), handelImg);
+route.post('/uploadImg', upload.single('profileImage'), handelImg);
+
 route.post("/changeUsername", changeUsername);
 
 route.get("/jokes", getJokes);

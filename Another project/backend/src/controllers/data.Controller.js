@@ -61,7 +61,6 @@ const loginUser = asyncHandler(async (req, res) => {
         return res.send(new ApiResponse(400, "Invalid credentials"));
     }
 
-
     const { password: _, ...userData } = existingUser.toObject();
 
     res.send(new ApiResponse(200, "Login successful", userData));
@@ -96,43 +95,35 @@ const changeUsername=asyncHandler(async(req,res)=>{
 
 const handelImg = asyncHandler(async (req, res) => {
     const { username } = req.body; 
-    const profileImage = req.file; 
-  
+    const profileImage = req.file;
+
     console.log(username, profileImage); 
   
     if (!profileImage || !username) {
-      return res.status(400).json(new ApiResponse(400, "Please provide both username and image"));
+        return res.status(400).json(new ApiResponse(400, "Please provide both username and image"));
     }
   
     try {
-      const imageUrl = await uploadImage(profileImage.path, 'profile_images');
-      console.log(imageUrl);
-
-      fs.unlink(profileImage.path, (err) => {
-
-        if (err) {
-          console.error("failed to delete local image:", err);
-        }else{
-            console.log("Image deleted successfully");
+        const imageUrl = await uploadImage(profileImage.path, 'profile_images');
+        console.log(imageUrl);
+  
+        const updatedUser = await User.findOneAndUpdate(
+            { username },
+            { ProfilePicture: imageUrl }, 
+            { new: true } 
+        );
+  
+        if (!updatedUser) {
+            return res.status(404).json(new ApiResponse(404, "User not found"));
         }
-      });
   
-      const updatedUser = await User.findOneAndUpdate(
-        { username },
-        { ProfilePicture: imageUrl }, 
-        { new: true } 
-      );
-  
-      if (!updatedUser) {
-        return res.status(404).json(new ApiResponse(404, "User not found"));
-      }
-  
-      res.json(new ApiResponse(200, "Profile picture updated successfully", { username, ProfilePicture: imageUrl }));
+        res.json(new ApiResponse(200, "Profile picture updated successfully", { username, ProfilePicture: imageUrl }));
     } catch (error) {
-      console.error(error);
-      res.status(500).json(new ApiResponse(500, "Error uploading image"));
+        console.error(error);
+        res.status(500).json(new ApiResponse(500, "Error uploading image"));
     }
-  });
+});
+
   
  
 export {
