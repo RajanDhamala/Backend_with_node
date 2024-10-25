@@ -30,12 +30,12 @@ const registerUser=asyncHandler(async(req,res)=>{
         username,
         email,
         password:hashedPassword,
-        fullname
+        fullname,
     })
 
     await newUser.save();
     res.send(
-        new ApiResponse(201, "User created successfully", newUser)
+        new ApiResponse(201, "Success", newUser)
     )
    
 })
@@ -55,7 +55,7 @@ const loginUser = asyncHandler(async (req, res) => {
         return res.send(new ApiResponse(404, "User not found"));
     }
 
-    const isPasswordMatch = await bcrypt.compare(password, existingUser.password);
+    const isPasswordMatch =await bcrypt.compare(password, existingUser.password);
 
     if (!isPasswordMatch) {
         return res.send(new ApiResponse(400, "Invalid credentials"));
@@ -106,6 +106,8 @@ const handelImg = asyncHandler(async (req, res) => {
     try {
         const imageUrl = await uploadImage(profileImage.path, 'profile_images');
         console.log(imageUrl);
+        fs.unlinkSync(profileImage.path);
+        
   
         const updatedUser = await User.findOneAndUpdate(
             { username },
