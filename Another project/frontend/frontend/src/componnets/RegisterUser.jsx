@@ -12,45 +12,44 @@ function RegisterUser() {
     e.preventDefault();
 
     const data = {
-      username: username.current.value,
-      password: password.current.value,
-      email: email.current.value,
-      fullname: fullname.current.value,
+        username: username.current.value,
+        password: password.current.value,
+        email: email.current.value,
+        fullname: fullname.current.value,
     };
 
     try {
-      const response = await fetch('http://localhost:8000/users/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+        const response = await fetch('http://localhost:8000/users/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
 
-      const res = await response.json();
+        const res = await response.json();
 
-      // Check response structure
-      if (response.status === 200 && res.message === "Success") {
-        setMessage(`Registration successful! Welcome, ${res.data.username}`);
-        setIsSuccess(true); // success
-      } else {
-        setMessage('Failed to register. Please try again.');
-        setIsSuccess(false); // failure
-      }
+        // Check response status and message
+        if (response.status === 201 && res.message === "Success") {
+            setMessage(`Registration successful! Welcome, ${res.data.username}`);
+            setIsSuccess(true); // success
+        } else {
+            setMessage(res.message || 'Failed to register. Please try again.');
+            setIsSuccess(false); // failure
+        }
 
-      // Optional: Clear the input fields after submission
-      username.current.value = '';
-      password.current.value = '';
-      email.current.value = '';
-      fullname.current.value = '';
+        // Optional: Clear the input fields after submission
+        username.current.value = '';
+        password.current.value = '';
+        email.current.value = '';
+        fullname.current.value = '';
 
     } catch (error) {
-      console.error('Error:', error);
-      setMessage('Failed to register due to a network issue.');
-      setIsSuccess(false); // failure in case of network error
+        console.error('Error:', error);
+        setMessage('Failed to register due to a network issue.');
+        setIsSuccess(false); // failure in case of network error
     }
-  };
-
+};
   return (
     <>
       <div className="top-20 relative">

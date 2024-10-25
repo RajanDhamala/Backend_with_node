@@ -38,7 +38,7 @@ function UploadImg() {
 
   return (
     <>
-      <div className='relative mt-40'>
+      <div className='relative mt-40 mx-5'>
         <div className="mb-4">
           <input 
             type="text" 
