@@ -4,6 +4,8 @@ import User from "../models/user.model.js"
 import bcrypt from "bcrypt";
 import { uploadImage } from "../utils/cloudinary.js";
 import fs from "fs"
+import { generateJWT}  from "../utils/GenerateJWT.js";
+import jwt from "jsonwebtoken";
 
 
 const registerUser=asyncHandler(async(req,res)=>{
@@ -61,8 +63,13 @@ const loginUser = asyncHandler(async (req, res) => {
         return res.send(new ApiResponse(400, "Invalid credentials"));
     }
 
-    const { password: _, ...userData } = existingUser.toObject();
+    const genratedToken=generateAccessToken(existingUser);
 
+    const { password: _, ...userData } = existingUser.toObject();
+    res.cookie("token",genratedToken,{
+        httpOnly:true,
+        secure:true,
+    })
     res.send(new ApiResponse(200, "Login successful", userData));
 });
 
@@ -126,6 +133,24 @@ const handelImg = asyncHandler(async (req, res) => {
     }
 });
 
+
+const generateAccessToken = (user)=>{
+
+    return jwt.sign({
+        id:user._id,
+        username:user.username,
+    },process.env.ACCESS_TOKEN,{expiresIn:process.env.ACCESS_TOKEN_EXPIRY});
+
+
+}
+
+const genrateRefreshToken=(user)=>{
+return jwt.sign({
+    id:user._id,
+    username:user.username,
+},process.env.REFRESH_TOKEN,{expiresIn:process.env.REFRESH_TOKEN_EXPIRY});
+
+}
   
  
 export {
