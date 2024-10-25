@@ -2,6 +2,8 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import User from "../models/user.model.js"
 import bcrypt from "bcrypt";
+import { uploadImage } from "../utils/cloudinary.js";
+import fs from "fs"
 
 
 const registerUser=asyncHandler(async(req,res)=>{
@@ -92,24 +94,50 @@ const changeUsername=asyncHandler(async(req,res)=>{
     );
 })
 
-const uploadImg=asyncHandler(async(req,res)=>{
-    
-    const {username,ProfileImage}=req.body;
-
-    console.log(username,ProfileImage);
-
-    if(!username || !ProfileImage){
-        return res.json(
-        new ApiResponse(400, "Please provide a username")
-        )
+const handelImg = asyncHandler(async (req, res) => {
+    const { username } = req.body; 
+    const profileImage = req.file; 
+  
+    console.log(username, profileImage); 
+  
+    if (!profileImage || !username) {
+      return res.status(400).json(new ApiResponse(400, "Please provide both username and image"));
     }
+  
+    try {
+      const imageUrl = await uploadImage(profileImage.path, 'profile_images');
+      console.log(imageUrl);
 
-})
+      fs.unlink(profileImage.path, (err) => {
 
+        if (err) {
+          console.error("failed to delete local image:", err);
+        }else{
+            console.log("Image deleted successfully");
+        }
+      });
+  
+      const updatedUser = await User.findOneAndUpdate(
+        { username },
+        { ProfilePicture: imageUrl }, 
+        { new: true } 
+      );
+  
+      if (!updatedUser) {
+        return res.status(404).json(new ApiResponse(404, "User not found"));
+      }
+  
+      res.json(new ApiResponse(200, "Profile picture updated successfully", { username, ProfilePicture: imageUrl }));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json(new ApiResponse(500, "Error uploading image"));
+    }
+  });
+  
  
 export {
     registerUser,
     loginUser,
     changeUsername,
-    uploadImg
+    handelImg
 }

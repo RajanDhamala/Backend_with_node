@@ -20,4 +20,3 @@ cloudinary.v2.config({
     }
   };
 
-  export {uploadImage};

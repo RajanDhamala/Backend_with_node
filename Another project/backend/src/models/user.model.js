@@ -14,6 +14,9 @@ const userSchema=new mongoose.Schema({
         require:true
     },fullname:{
         type:String,
+    },ProfilePicture:{
+        type:String,
+        require:false
     }
 },{timestamps:true});
 
