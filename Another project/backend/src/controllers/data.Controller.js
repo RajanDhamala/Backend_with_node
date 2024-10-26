@@ -79,14 +79,13 @@ const loginUser = asyncHandler(async (req, res) => {
 
     res.cookie("accessToken", genratedAccessToken, {
         httpOnly: true,
-        secure: false, // Change to true in production with HTTPS
-        maxAge: 15 * 60 * 1000 // 15 minutes
+        secure: false, 
     });
 
     res.cookie("refreshToken", generatedRefreshToken, {
         httpOnly: true,
-        secure: false, // Change to true in production with HTTPS
-        maxAge: 15 * 24 * 60 * 60 * 1000 // 15 days
+        secure: false, 
+        maxAge: 15 * 24 * 60 * 60 * 1000 
     });
     
     

@@ -14,7 +14,6 @@ function LoginForm() {
             return;
         }
 
-        // Prepare the data for the POST request
         const loginData = {
             email: userEmail,
             password: userPassword,
@@ -31,16 +30,16 @@ function LoginForm() {
             });
 
             if (!response.ok) {
-                // Handle errors, for example, incorrect credentials
+      
                 const errorData = await response.json();
                 alert(`Error: ${errorData.message || 'Login failed'}`);
                 return;
             }
 
-            // Successful login
+
             const data = await response.json();
             console.log('Login successful:', data);
-            // Handle successful login (e.g., store tokens, redirect, etc.)
+        
 
         } catch (error) {
             console.error('Error during login:', error);

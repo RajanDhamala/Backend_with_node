@@ -9,10 +9,6 @@ export const authenticateJWT = async (req, res, next) => {
     const accessToken = req.cookies.accessToken;
     const refreshToken = req.cookies.refreshToken;
 
-    if (!accessToken) {
-        return res.status(401).json({ error: "Access token not found" });
-    }
-
     jwt.verify(accessToken, process.env.ACCESS_TOKEN, async (err, decodedToken) => {
         if (!err) {
             req.user = decodedToken;
@@ -42,7 +38,6 @@ export const authenticateJWT = async (req, res, next) => {
             res.cookie("accessToken", newAccessToken, {
                 httpOnly: true,
                 secure: true,
-                maxAge: 15 * 60 * 1000 // 15 minutes
             });
 
             req.user = refreshDecoded;
