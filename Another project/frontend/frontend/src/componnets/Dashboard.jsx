@@ -9,7 +9,7 @@ function Dashboard() {
     try {
       const response = await fetch('http://localhost:8000/users/profile', {
         method: 'GET',
-        credentials: 'include', // Important for including cookies
+        credentials: 'include', 
       });
 
       if (!response.ok) {
@@ -18,7 +18,7 @@ function Dashboard() {
       }
 
       const data = await response.json();
-      setusrinfo(data.data); // Set user data to state
+      setusrinfo(data.data); 
     } catch (er) {
       alert("Error while fetching data");
       console.log(er);
@@ -29,11 +29,11 @@ function Dashboard() {
     <>
     <div className='relative mt-40'>
       <div className="max-w-sm w-full bg-white rounded-lg shadow-md overflow-hidden md:max-w-md mx-auto p-5 ">
-        {usrinfo ? ( // Check if usrinfo is available
+        {usrinfo ? (
           <div className="flex items-center">
             <div className="h-24 w-24 flex justify-center items-center">
               <img
-                src={usrinfo.ProfilePicture || 'https://via.placeholder.com/150'} // Use a placeholder if no image
+                src={usrinfo.ProfilePicture || 'https://via.placeholder.com/150'}
                 alt="usr img"
                 className="h-full w-full rounded-full border-2 border-gray-300 object-cover"
               />
