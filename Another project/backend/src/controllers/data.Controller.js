@@ -44,7 +44,7 @@ const registerUser=asyncHandler(async(req,res)=>{
 
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-
+ 
     console.log(email, password);
     
     if (!email || !password) {
@@ -77,19 +77,20 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const { password: _, ...userData } = existingUser.toObject();
 
-    res.cookie("accessToken", generatedAccessToken, {
+    res.cookie("accessToken", genratedAccessToken, {
         httpOnly: true,
-        secure: true,
+        secure: false, // Change to true in production with HTTPS
         maxAge: 15 * 60 * 1000 // 15 minutes
     });
-    
+
     res.cookie("refreshToken", generatedRefreshToken, {
         httpOnly: true,
-        secure: true,
+        secure: false, // Change to true in production with HTTPS
         maxAge: 15 * 24 * 60 * 60 * 1000 // 15 days
     });
     
-    res.status(200).send(new ApiResponse(200, "Login successful", userData));
+    
+    res.status(200).send(new ApiResponse(200, "Login successful", userData,));
 });
 
 const changeUsername=asyncHandler(async(req,res)=>{

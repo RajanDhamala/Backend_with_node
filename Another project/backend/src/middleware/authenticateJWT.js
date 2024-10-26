@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { User } from "../models/User.js";
+import User from "../models/user.model.js";
 import dotenv from "dotenv";
 import { generateAccessToken } from "../controllers/data.Controller.js";
 
@@ -32,7 +32,9 @@ export const authenticateJWT = async (req, res, next) => {
         
             const existingUser = await User.findOne({ email: refreshDecoded.email });
             if (!existingUser || existingUser.RefreshToken !== refreshToken) {
+                res.clearCookie("accessToken");
                 return res.status(403).json({ error: "Invalid refresh token" });
+                
             }
 
             const newAccessToken = generateAccessToken(existingUser);
