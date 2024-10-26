@@ -9,7 +9,7 @@ function Dashboard() {
     try {
       const response = await fetch('http://localhost:8000/users/profile', {
         method: 'GET',
-        credentials: 'include', 
+        credentials: 'include', // Include cookies in the request
       });
 
       if (!response.ok) {
@@ -18,23 +18,22 @@ function Dashboard() {
       }
 
       const data = await response.json();
-      setusrinfo(data.data); 
+      setusrinfo(data.data); // Assuming the response has a data object containing user info
     } catch (er) {
       alert("Error while fetching data");
-      console.log(er);
+      console.log("Fetch error:", er); // Log the full error for better debugging
     }
   };
 
   return (
-    <>
     <div className='relative mt-40'>
-      <div className="max-w-sm w-full bg-white rounded-lg shadow-md overflow-hidden md:max-w-md mx-auto p-5 ">
+      <div className="max-w-sm w-full bg-white rounded-lg shadow-md overflow-hidden md:max-w-md mx-auto p-5">
         {usrinfo ? (
           <div className="flex items-center">
             <div className="h-24 w-24 flex justify-center items-center">
               <img
                 src={usrinfo.ProfilePicture || 'https://via.placeholder.com/150'}
-                alt="usr img"
+                alt="User profile"
                 className="h-full w-full rounded-full border-2 border-gray-300 object-cover"
               />
             </div>
@@ -51,13 +50,15 @@ function Dashboard() {
         )}
 
         <div className='flex justify-center mt-5'>
-          <button className='bg-blue-500 hover:bg-blue-600 text-white rounded-md px-2 py-0.5' onClick={fetchData}>
+          <button
+            className='bg-blue-500 hover:bg-blue-600 text-white rounded-md px-2 py-0.5'
+            onClick={fetchData}
+          >
             Get your info
           </button>
         </div>
       </div>
-      </div>
-    </>
+    </div>
   );
 }
 

@@ -17,7 +17,7 @@ route.get("/",(req,res)=>{
 
 route.post("/register", registerUser);
 route.post("/login", loginUser);
-route.post('/uploadImg', upload.single('profileImage'), handelImg);
+route.post('/uploadImg', upload.single('profileImage'),authenticateJWT, handelImg);
 
 route.get("/logout", (req, res) => {
     res.clearCookie("accessToken");

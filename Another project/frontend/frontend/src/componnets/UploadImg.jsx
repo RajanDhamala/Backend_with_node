@@ -22,6 +22,7 @@ function UploadImg() {
     try {
       const response = await fetch("http://localhost:8000/users/uploadImg", {
         method: "POST",
+        credentials: 'include',
         body: formData,
       });
       const result = await response.json();
