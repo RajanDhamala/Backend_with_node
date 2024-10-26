@@ -63,14 +63,33 @@ const loginUser = asyncHandler(async (req, res) => {
         return res.send(new ApiResponse(400, "Invalid credentials"));
     }
 
-    const genratedToken=generateAccessToken(existingUser);
+    const genratedAccessToken=generateAccessToken(existingUser);
+    const generatedRefreshToken=genrateRefreshToken(existingUser);
+    try {
+        await User.findOneAndUpdate(
+            { email: existingUser.email },
+            {RefreshToken: generatedRefreshToken },
+            { new: true }
+        );
+    } catch (error) {
+        return res.status(500).send(new ApiResponse(500, "Error updating tokens in the database"));
+    }
 
     const { password: _, ...userData } = existingUser.toObject();
-    res.cookie("token",genratedToken,{
-        httpOnly:true,
-        secure:true,
-    })
-    res.send(new ApiResponse(200, "Login successful", userData));
+
+    res.cookie("accessToken", generatedAccessToken, {
+        httpOnly: true,
+        secure: true,
+        maxAge: 15 * 60 * 1000 // 15 minutes
+    });
+    
+    res.cookie("refreshToken", generatedRefreshToken, {
+        httpOnly: true,
+        secure: true,
+        maxAge: 15 * 24 * 60 * 60 * 1000 // 15 days
+    });
+    
+    res.status(200).send(new ApiResponse(200, "Login successful", userData));
 });
 
 const changeUsername=asyncHandler(async(req,res)=>{
@@ -135,7 +154,6 @@ const handelImg = asyncHandler(async (req, res) => {
 
 
 const generateAccessToken = (user)=>{
-
     return jwt.sign({
         id:user._id,
         username:user.username,
@@ -157,5 +175,7 @@ export {
     registerUser,
     loginUser,
     changeUsername,
-    handelImg
+    handelImg,
+    generateAccessToken,
+    genrateRefreshToken
 }
