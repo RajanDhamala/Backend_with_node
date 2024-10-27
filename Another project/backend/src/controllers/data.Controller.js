@@ -4,8 +4,8 @@ import User from "../models/user.model.js"
 import bcrypt from "bcrypt";
 import { uploadImage } from "../utils/cloudinary.js";
 import fs from "fs"
-import { generateJWT}  from "../utils/GenerateJWT.js";
 import jwt from "jsonwebtoken";
+import UserVideoPhoto from "../models/userVideoPhoto.model.js";
 
 
 const registerUser=asyncHandler(async(req,res)=>{
@@ -132,7 +132,6 @@ const handelImg = asyncHandler(async (req, res) => {
     try {
         const imageUrl = await uploadImage(profileImage.path, 'profile_images');
         console.log(imageUrl);
-        fs.unlinkSync(profileImage.path);
         
   
         const updatedUser = await User.findOneAndUpdate(
@@ -169,7 +168,51 @@ return jwt.sign({
 },process.env.REFRESH_TOKEN,{expiresIn:process.env.REFRESH_TOKEN_EXPIRY});
 
 }
-  
+
+const uploadVideoPhoto = asyncHandler(async (req, res) => {
+    const username = req.user;
+    const videoPhoto = req.file;
+
+    console.log(req.cookies);
+    console.log(username, videoPhoto);
+
+
+    if (!videoPhoto || !username) {
+        return res.status(400).json(new ApiResponse(400, "Please provide both username and video/photo"));
+    }
+    
+
+    try {
+        const imageVideoUrl = await uploadImage(videoPhoto.path, 'video_photos');
+
+        fs.unlinkSync(videoPhoto.path);
+        const existingUser = await User.findOne({ username });
+        if (!existingUser) {
+            return res.status(404).json(new ApiResponse(404, "User not found"));
+        }
+
+        const userVideoPhoto = new UserVideoPhoto({
+            user: existingUser._id,
+            media: [{
+                url: imageVideoUrl.url,
+                type: videoPhoto.mimetype.split("/")[0], 
+                uploadedAt: Date.now()
+            }]
+        });
+
+        const update = await userVideoPhoto.save();
+
+        console.log('Database entry created/updated:', update);
+
+        res.status(200).json(new ApiResponse(200, "Video/photo uploaded successfully", {
+            username,
+            videoPhoto: imageVideoUrl.url
+        }));
+    } catch (error) {
+        console.error('Error uploading video/photo:', error);
+        res.status(500).json(new ApiResponse(500, "Error uploading video/photo"));
+    }
+});
  
 export {
     registerUser,
@@ -177,5 +220,6 @@ export {
     changeUsername,
     handelImg,
     generateAccessToken,
-    genrateRefreshToken
+    genrateRefreshToken,
+    uploadVideoPhoto
 }

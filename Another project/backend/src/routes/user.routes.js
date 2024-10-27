@@ -1,7 +1,7 @@
 import express from "express";
 import { getJokes}  from "../controllers/user.controller.js";
 import {loginUser,changeUsername,handelImg,
-registerUser } from "../controllers/data.Controller.js";
+registerUser, uploadVideoPhoto } from "../controllers/data.Controller.js";
 import upload from "../middleware/multerMiddle.js";
 
 import { authenticateJWT } from "../middleware/authenticateJWT.js";
@@ -35,12 +35,8 @@ route.get("/profile",authenticateJWT, async(req, res) => {
                 new ApiResponse(404, "User not found")
             )
         }
-
         const { password, ...userData } = usrdetail.toObject();
         res.send(new ApiResponse(200, "Success", userData));
-
-        
-
 
     }catch(err){
         res.status(500).send(new ApiResponse(500, "Error retrieving user details"));
@@ -52,5 +48,8 @@ route.get("/profile",authenticateJWT, async(req, res) => {
 route.post("/changeUsername", changeUsername);
 
 route.get("/jokes", getJokes);
+
+route.post("/uploadVideoPhoto", upload.single("videoPhoto"), authenticateJWT, uploadVideoPhoto);
+
 
 export default route;
