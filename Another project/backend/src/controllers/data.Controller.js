@@ -8,6 +8,7 @@ import jwt from "jsonwebtoken";
 import UserVideoPhoto from "../models/userVideoPhoto.model.js";
 
 
+
 const registerUser=asyncHandler(async(req,res)=>{
     const {username,email,password,fullname}=req.body;
     console.log(username,email,password,fullname)
@@ -211,6 +212,53 @@ const uploadVideoPhoto = asyncHandler(async (req, res) => {
     }
 });
 
+const handelVideopost = asyncHandler(async (req, res) => {
+    const username = req.user.username;
+  
+    if (!username) {
+      console.log("Please provide a username");
+      return res.status(400).json(
+        new ApiResponse(400, "Please provide a username")
+      );
+    }
+  
+    try {
+      const currentUser = await User.findOne({ username }).select('username');
+  
+      if (!currentUser) {
+        console.log("User not found");
+        return res.status(404).json(
+          new ApiResponse(404, "User not found")
+        );
+      }
+  
+      // Find all video/photo entries related to the user
+      const userVideoPhotos = await UserVideoPhoto.find({ user: currentUser._id }).select('-createdAt -updatedAt');
+  
+      if (!userVideoPhotos || userVideoPhotos.length === 0) {
+        console.log("No videos or photos found for this user");
+        return res.status(404).json(
+          new ApiResponse(404, "No videos or photos found for this user")
+        );
+      }
+  
+      // Flatten media array from multiple documents, if needed
+      const allMedia = userVideoPhotos.flatMap(videoPhoto => videoPhoto.media);
+  
+      return res.status(200).json(
+        new ApiResponse(200, "User video/photo data retrieved successfully", {
+          username: currentUser.username,
+          media: allMedia
+        })
+      );
+    } catch (error) {
+      console.error("Error retrieving user details:", error);
+      return res.status(500).json(
+        new ApiResponse(500, "Error retrieving user details")
+      );
+    }
+  });
+  
  
 export {
     registerUser,
@@ -219,5 +267,6 @@ export {
     handelImg,
     generateAccessToken,
     genrateRefreshToken,
-    uploadVideoPhoto
+    uploadVideoPhoto,
+    handelVideopost
 }

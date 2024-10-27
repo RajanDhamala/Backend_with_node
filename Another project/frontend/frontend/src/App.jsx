@@ -7,6 +7,7 @@ import RegisterUser from './componnets/RegisterUser';
 import UploadImg from './componnets/UploadImg';
 import LoginForm from './componnets/LoginForm';
 import UploadVideoPhoto from './componnets/UploadVideoPhoto';
+import VideoGallery from './componnets/videoGallary';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Link to="/login" className='hover:underline'>Login</Link>
           <Link to="/dashboard" className='hover:underline'>dashboard</Link>
           <Link to="/uploadVideoPhoto" className='hover:underline'>Upload Video/Photo</Link>
+          <Link to="/videos" className='hover:underline'>User Uploads</Link>
         </div>
         <Routes>
           <Route path="/register" element={<RegisterUser />} />
@@ -25,6 +27,7 @@ function App() {
           <Route path="/login" element={<LoginForm />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/uploadVideoPhoto" element={<UploadVideoPhoto />} />
+          <Route path="/videos" element={<VideoGallery />} />
         </Routes>
       </div>
     </Router>

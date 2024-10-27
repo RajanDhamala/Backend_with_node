@@ -1,7 +1,7 @@
 import express from "express";
 import { getJokes}  from "../controllers/user.controller.js";
 import {loginUser,changeUsername,handelImg,
-registerUser, uploadVideoPhoto } from "../controllers/data.Controller.js";
+registerUser, uploadVideoPhoto, handelVideopost } from "../controllers/data.Controller.js";
 import upload from "../middleware/multerMiddle.js";
 
 import { authenticateJWT } from "../middleware/authenticateJWT.js";
@@ -50,6 +50,8 @@ route.post("/changeUsername", changeUsername);
 route.get("/jokes", getJokes);
 
 route.post("/uploadVideoPhoto", upload.single("videoPhoto"), authenticateJWT, uploadVideoPhoto);
+
+route.get("/videoPost",authenticateJWT, handelVideopost);
 
 
 export default route;
