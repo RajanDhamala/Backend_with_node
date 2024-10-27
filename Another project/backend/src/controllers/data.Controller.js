@@ -132,8 +132,9 @@ const handelImg = asyncHandler(async (req, res) => {
     try {
         const imageUrl = await uploadImage(profileImage.path, 'profile_images');
         console.log(imageUrl);
+
+        fs.unlinkSync(profileImage.path);
         
-  
         const updatedUser = await User.findOneAndUpdate(
             { username },
             { ProfilePicture: imageUrl }, 
@@ -150,7 +151,6 @@ const handelImg = asyncHandler(async (req, res) => {
         res.status(500).json(new ApiResponse(500, "Error uploading image"));
     }
 });
-
 
 const generateAccessToken = (user)=>{
     return jwt.sign({
@@ -170,22 +170,21 @@ return jwt.sign({
 }
 
 const uploadVideoPhoto = asyncHandler(async (req, res) => {
-    const username = req.user;
+    const username = req.user.username;  
     const videoPhoto = req.file;
 
     console.log(req.cookies);
     console.log(username, videoPhoto);
 
-
     if (!videoPhoto || !username) {
         return res.status(400).json(new ApiResponse(400, "Please provide both username and video/photo"));
     }
-    
 
     try {
-        const imageVideoUrl = await uploadImage(videoPhoto.path, 'video_photos');
+        const imageVideoUrl = await uploadImage(videoPhoto.path, 'video_photos', true);
 
         fs.unlinkSync(videoPhoto.path);
+
         const existingUser = await User.findOne({ username });
         if (!existingUser) {
             return res.status(404).json(new ApiResponse(404, "User not found"));
@@ -194,25 +193,24 @@ const uploadVideoPhoto = asyncHandler(async (req, res) => {
         const userVideoPhoto = new UserVideoPhoto({
             user: existingUser._id,
             media: [{
-                url: imageVideoUrl.url,
-                type: videoPhoto.mimetype.split("/")[0], 
+                url: imageVideoUrl, 
+                type: videoPhoto.mimetype.split("/")[0],  
                 uploadedAt: Date.now()
             }]
         });
 
         const update = await userVideoPhoto.save();
 
-        console.log('Database entry created/updated:', update);
-
         res.status(200).json(new ApiResponse(200, "Video/photo uploaded successfully", {
             username,
-            videoPhoto: imageVideoUrl.url
+            videoPhoto: imageVideoUrl
         }));
     } catch (error) {
         console.error('Error uploading video/photo:', error);
         res.status(500).json(new ApiResponse(500, "Error uploading video/photo"));
     }
 });
+
  
 export {
     registerUser,

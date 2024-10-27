@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const userVideoPhotoSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "User", 
     required: true
   },
   media: [
@@ -14,7 +14,7 @@ const userVideoPhotoSchema = new mongoose.Schema({
       },
       type: {
         type: String,
-        enum: ["video", "photo"],
+        enum: ["video", "photo"], 
         required: true
       },
       uploadedAt: {
@@ -24,7 +24,7 @@ const userVideoPhotoSchema = new mongoose.Schema({
     }
   ]
 }, {
-  timestamps: true
+  timestamps: true  
 });
 
 export default mongoose.model("UserVideoPhoto", userVideoPhotoSchema);

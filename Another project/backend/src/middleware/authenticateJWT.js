@@ -9,12 +9,9 @@ export const authenticateJWT = async (req, res, next) => {
     const accessToken = req.cookies.accessToken;
     const refreshToken = req.cookies.refreshToken;
 
-    console.log(accessToken, refreshToken);
-
     jwt.verify(accessToken, process.env.ACCESS_TOKEN, async (err, decodedToken) => {
         if (!err) {
             req.user = decodedToken;
-            console.log(decodedToken)
             return next();
         }
  
