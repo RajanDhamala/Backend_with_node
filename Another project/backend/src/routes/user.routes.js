@@ -7,7 +7,7 @@ import upload from "../middleware/multerMiddle.js";
 import { authenticateJWT } from "../middleware/authenticateJWT.js";
 import User from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import {UserPostController,sendTweetsToUser,TweetLikeController} from "../controllers/UserPost.controller.js";
+import {UserPostController,sendTweetsToUser,TweetLikeController,TweetCommentSender,TweetCommentController} from "../controllers/UserPost.controller.js";
 
 
 const route=express.Router();
@@ -57,6 +57,10 @@ route.post("/postTweets", upload.single("content"), authenticateJWT, UserPostCon
 route.get("/Gettweets", authenticateJWT, sendTweetsToUser);
 
 route.post("/likeTweets", authenticateJWT, TweetLikeController);
+
+route.post("/commentTweets", authenticateJWT, TweetCommentSender);
+
+route.post("/comment", authenticateJWT, TweetCommentController);
 
 
 

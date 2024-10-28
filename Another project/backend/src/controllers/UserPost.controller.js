@@ -51,42 +51,46 @@ const UserPostController = asyncHandler(async (req, res) => {
 });
 
 
-
 const sendTweetsToUser = asyncHandler(async (req, res) => {
     const username = req.user.username;
 
     if (!username) {
-        return res.send(new ApiResponse(400, "Please provide username"));
+        return res.status(400).send(new ApiResponse(400, "Please provide username"));
     }
 
     try {
         const existingUser = await User.findOne({ username });
         if (!existingUser) {
-            return res.send(new ApiResponse(404, "User not found"));
+            return res.status(404).send(new ApiResponse(404, "User not found"));
         }
 
         const tweets = await TwitterPost.find({ owner: existingUser._id }).populate('owner', 'username');
 
         if (tweets.length === 0) {
-            return res.send(new ApiResponse(404, "No tweets found"));
+            return res.status(404).send(new ApiResponse(404, "No tweets found"));
         }
 
+     
         const responseData = tweets.map(tweet => ({
             tweetId: tweet._id,
             owner: tweet.owner.username,
             contentURL: tweet.url,
             caption: tweet.caption,
             likes: tweet.likes.length,
-            isLiked: tweet.likes.includes(existingUser._id)
+            isLiked: tweet.likes.includes(existingUser._id),
+            uploadedAt: tweet.createdAt, 
+            commentCount: tweet.comments.length 
         }));
 
-        res.json(new ApiResponse(200, "Success", responseData));
+      
+        return res.status(200).json(new ApiResponse(200, "Success", responseData));
 
     } catch (err) {
         console.log("Error getting tweets", err);
-        res.send(new ApiResponse(500, "Error getting tweets", err.message));
+        return res.status(500).send(new ApiResponse(500, "Error getting tweets", err.message));
     }
 });
+
 
 const TweetLikeController = asyncHandler(async (req, res) => {
     const username = req.user.username;
@@ -128,56 +132,95 @@ const TweetLikeController = asyncHandler(async (req, res) => {
         return res.send(new ApiResponse(500, "Error in liking/unliking tweet"));
     }
 });
+const TweetCommentController = asyncHandler(async (req, res) => {
+    const username = req.user.username;
+    const { tweetId, comment } = req.body; 
+    console.log("TweetId:", tweetId); 
 
-const TweetCommentController= asyncHandler(async (req,res)=>{
-    const username =req.user.username;
-    const {tweetId,comment}=req.body;
-
-    if(!username){
-        return res.send(new ApiResponse(400,"Please provide username"));
+  
+    if (!username) {
+        return res.status(400).send(new ApiResponse(400, "Please provide username"));
     }
 
-    if(!tweetId || comment.length===0){
-        return res.send(new ApiResponse(400,"Please provide tweetId and comment"));
+    if (!tweetId || !comment || comment.trim().length === 0) { 
+        return res.status(400).send(new ApiResponse(400, "Please provide tweetId and a valid comment"));
     }
 
-    try{
-        const existingUser=await User.findOne({username})
-        const tweet=await TwitterPost.findById(tweetId);
+    try {
+       
+        const existingUser = await User.findOne({ username });
+        const tweet = await TwitterPost.findById(tweetId); 
 
-        if(!existingUser || !tweet){
-            return res.send(new ApiResponse(404,"User not found in database or tweet not found"));
+    
+        if (!existingUser) {
+            return res.status(404).send(new ApiResponse(404, "User not found in database"));
         }
 
-        const newComment={
-            user:existingUser._id,
-            comment:comment
+        if (!tweet) {
+            return res.status(404).send(new ApiResponse(404, "Tweet not found"));
         }
 
+      
+        const newComment = {
+            user: existingUser._id,
+            comment: comment,
+            commentedAt: new Date(), 
+        };
+
+    
         const updatedTweet = await TwitterPost.findByIdAndUpdate(
             tweetId,
             { $push: { comments: newComment } },
             { new: true }
+        ).populate("comments.user", "username profileImage");
 
-        ).populate("comments.user", "username");
-
-        if(!updatedTweet){
-            return res.send(new ApiResponse(404,"Tweet not found"));
+     
+        if (!updatedTweet) {
+            return res.status(404).send(new ApiResponse(404, "Tweet not found"));
         }
 
-        const latestComment = updatedTweet.comments[updatedTweet.comments.length - 1];
-
-        return res.send(new ApiResponse(200, "Commented on tweet successfully", latestComment));
-
-    }catch(err){
-        console.log("Error in commenting on tweet",err);
-        res.send(new ApiResponse(500,"Error in commenting on tweet",err.message));
+       
+        return res.status(200).send(new ApiResponse(200, "Commented on tweet successfully", updatedTweet.comments));
+    } catch (err) {
+        console.error("Error in commenting on tweet:", err);
+        return res.status(500).send(new ApiResponse(500, "Error in commenting on tweet", err.message));
     }
+});
+
+
+const TweetCommentSender = asyncHandler(async (req,res)=>{
+
+    const username = req.user.username;
+    const tweetId = req.body;
+
+
+    if(!username || !tweetId){
+        return res.send(new ApiResponse(400,"Please provide username and tweetId"));
+    }
+
+    const existingUser=await User.findOne({username});
+    const tweet = await TwitterPost.findById(tweetId)
+    .populate("comments.user", "username");
+
+    if(!tweet){
+        return res.send(new ApiResponse(404,"Tweet not found"));
+    }
+
+    const comments = tweet.comments.map(comment => ({
+        comment: comment.comment,
+        commentedAt: comment.commentedAt,
+        username: comment.user.username,
+        userphoto:existingUser.profileImage
+    }));
+
+    return res.send(new ApiResponse(200, "Successfully fetched comments from backend", comments));
+
 })
 
 export {
     UserPostController,
     sendTweetsToUser,
     TweetLikeController,
-    TweetCommentController
+    TweetCommentController,
+    TweetCommentSender
 }
