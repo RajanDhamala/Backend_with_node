@@ -231,8 +231,7 @@ const handelVideopost = asyncHandler(async (req, res) => {
           new ApiResponse(404, "User not found")
         );
       }
-  
-      // Find all video/photo entries related to the user
+     
       const userVideoPhotos = await UserVideoPhoto.find({ user: currentUser._id }).select('-createdAt -updatedAt');
   
       if (!userVideoPhotos || userVideoPhotos.length === 0) {
@@ -242,7 +241,7 @@ const handelVideopost = asyncHandler(async (req, res) => {
         );
       }
   
-      // Flatten media array from multiple documents, if needed
+     
       const allMedia = userVideoPhotos.flatMap(videoPhoto => videoPhoto.media);
   
       return res.status(200).json(
