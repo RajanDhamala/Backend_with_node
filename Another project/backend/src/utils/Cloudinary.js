@@ -19,8 +19,6 @@ export const uploadImage = async (filePath, folder, isVideo = false) => {
     } else {
       uploadOptions.resource_type = 'image';
     }
-
-    // Upload the file to Cloudinary
     const result = await cloudinary.v2.uploader.upload(filePath, uploadOptions);
     return result.secure_url;
   } catch (error) {

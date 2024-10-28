@@ -4,7 +4,8 @@ const twitterPostSchema = new mongoose.Schema({
     owner:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'User',
-        required:true
+        required:true,
+        index:true
     },
     caption:{
         type:String,
@@ -12,19 +13,16 @@ const twitterPostSchema = new mongoose.Schema({
     },likes:[
         {
             type:mongoose.Schema.Types.ObjectId,
-        ref:'User'
+        ref:'User',
+        default:[]
         }
-    ]
-    ,dislikes:[
-        {
-            type:mongoose.Schema.Types.ObjectId,
-            ref:'User'
-          }
-    ]
-    ,content:{
+    ],content:[
+       { uploadedContent:{
         type:String,
         required:false
-    },comments:[
+       }
+        }
+    ],comments:[
         {
             user:{
                 type:mongoose.Schema.Types.ObjectId,
@@ -42,6 +40,5 @@ const twitterPostSchema = new mongoose.Schema({
     timestamps:true
 })
 
-const TwitterPost=mongoose.model('TwitterPost',twitterPostSchema);
+export const TwitterPost=mongoose.model('TwitterPost',twitterPostSchema);
 
-export default TwitterPost
