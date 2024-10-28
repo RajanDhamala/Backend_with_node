@@ -39,7 +39,7 @@ function App() {
           <Link to="/tweets" className='hover:underline'>Get Tweets</Link>
           <button
             onClick={handleLogout}
-            className='bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600'
+            className='bg-red-500 text-white h-5 w-16 px-2 flex items-center  rounded hover:bg-red-600'
           >
             Logout
           </button>

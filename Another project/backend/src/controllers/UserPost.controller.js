@@ -22,7 +22,6 @@ const UserPostController = asyncHandler(async (req, res) => {
     try {
         const imageVideoUrl = await imageORvideoUpload(content.path, 'twitterPost', content.mimetype.split('/')[0]);
         
-        // Remove the local file after upload
         fs.unlinkSync(content.path);
 
         const existingUser = await User.findOne({ username });
@@ -30,27 +29,24 @@ const UserPostController = asyncHandler(async (req, res) => {
             return res.send(new ApiResponse(404, "User not found"));
         }
 
-        const newTwitterPost = new TwitterPost({
-            owner: existingUser._id,
-            media: [{
-                url: imageVideoUrl,
-                type: content.mimetype.split('/')[0],
-                uploadedAt: Date.now()
-            }],
-            caption: caption
-        });
+        const newTwitterPost=new TwitterPost({
+            owner:existingUser._id,
+            caption:caption,
+            url:imageVideoUrl,
+            comments: [],
+        })
 
         await newTwitterPost.save();
         console.log("Post uploaded successfully");
 
         res.send(new ApiResponse(200, "Post uploaded successfully", {
             username,
-            post: imageVideoUrl
+            postedConentUrl: imageVideoUrl
         }));
 
     } catch (err) {
         console.log("Error uploading post", err);
-        res.send(new ApiResponse(500, "Error uploading post", err.message)); // Include error message for debugging
+        res.send(new ApiResponse(500, "Error uploading post", err.message)); 
     }
 });
 
@@ -78,7 +74,7 @@ const sendTweetsToUser = asyncHandler(async (req, res) => {
         const responseData = tweets.map(tweet => ({
             tweetId: tweet._id,
             owner: tweet.owner.username,
-            media: Array.isArray(tweet.media) && tweet.media.length > 0 ? tweet.media[0].url : null, 
+            contentURL: tweet.url,
             caption: tweet.caption,
             likes: tweet.likes.length,
             isLiked: tweet.likes.includes(existingUser._id)
@@ -88,10 +84,9 @@ const sendTweetsToUser = asyncHandler(async (req, res) => {
 
     } catch (err) {
         console.log("Error getting tweets", err);
-        res.send(new ApiResponse(500, "Error getting tweets", err.message)); // Include error message for debugging
+        res.send(new ApiResponse(500, "Error getting tweets", err.message));
     }
 });
-
 
 const TweetLikeController = asyncHandler(async (req, res) => {
     const username = req.user.username;
@@ -114,15 +109,15 @@ const TweetLikeController = asyncHandler(async (req, res) => {
 
         const isLiked = tweet.likes.includes(existingUser._id);
 
-        // Update likes array based on whether the tweet is liked or unliked
+     
         if (isLiked) {
-            tweet.likes.pull(existingUser._id);  // Remove user from likes if they already liked
+            tweet.likes.pull(existingUser._id);  
         } else {
-            tweet.likes.push(existingUser._id);  // Add user to likes if they haven't liked
+            tweet.likes.push(existingUser._id); 
         }
 
-        const updatedTweet = await tweet.save();  // Save changes
-        const likeCount = updatedTweet.likes.length;  // Get the updated like count
+        const updatedTweet = await tweet.save();  
+        const likeCount = updatedTweet.likes.length;  
 
         return res.send(new ApiResponse(200, `Tweet ${isLiked ? 'unliked' : 'liked'} successfully`, {
             likeCount,

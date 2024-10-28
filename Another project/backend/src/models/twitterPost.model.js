@@ -16,13 +16,12 @@ const twitterPostSchema = new mongoose.Schema({
         ref:'User',
         default:[]
         }
-    ],content:[
-       { uploadedContent:{
+    ],url:{
         type:String,
         required:false
        }
-        }
-    ],comments:[
+        
+    ,comments:[
         {
             user:{
                 type:mongoose.Schema.Types.ObjectId,
@@ -33,6 +32,7 @@ const twitterPostSchema = new mongoose.Schema({
             },commentedAt:{
             type:Date,
             required:true,
+            default:Date.now
             }
         }
     ]
