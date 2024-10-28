@@ -129,9 +129,55 @@ const TweetLikeController = asyncHandler(async (req, res) => {
     }
 });
 
+const TweetCommentController= asyncHandler(async (req,res)=>{
+    const username =req.user.username;
+    const {tweetId,comment}=req.body;
+
+    if(!username){
+        return res.send(new ApiResponse(400,"Please provide username"));
+    }
+
+    if(!tweetId || comment.length===0){
+        return res.send(new ApiResponse(400,"Please provide tweetId and comment"));
+    }
+
+    try{
+        const existingUser=await User.findOne({username})
+        const tweet=await TwitterPost.findById(tweetId);
+
+        if(!existingUser || !tweet){
+            return res.send(new ApiResponse(404,"User not found in database or tweet not found"));
+        }
+
+        const newComment={
+            user:existingUser._id,
+            comment:comment
+        }
+
+        const updatedTweet = await TwitterPost.findByIdAndUpdate(
+            tweetId,
+            { $push: { comments: newComment } },
+            { new: true }
+
+        ).populate("comments.user", "username");
+
+        if(!updatedTweet){
+            return res.send(new ApiResponse(404,"Tweet not found"));
+        }
+
+        const latestComment = updatedTweet.comments[updatedTweet.comments.length - 1];
+
+        return res.send(new ApiResponse(200, "Commented on tweet successfully", latestComment));
+
+    }catch(err){
+        console.log("Error in commenting on tweet",err);
+        res.send(new ApiResponse(500,"Error in commenting on tweet",err.message));
+    }
+})
 
 export {
     UserPostController,
     sendTweetsToUser,
-    TweetLikeController
+    TweetLikeController,
+    TweetCommentController
 }

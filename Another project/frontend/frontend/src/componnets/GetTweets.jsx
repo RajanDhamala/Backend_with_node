@@ -120,8 +120,18 @@ const GetTweets = () => {
         <p className="text-gray-600 text-sm">{tweet.comments} Comments</p>
     </div>
 </div>
+<div className="flex items-center border border-gray-300 rounded-md px-2 py-1">
+    <input
+        type="text"
+        className="focus:outline-none flex-grow px-1 rounded-md"
+        placeholder="Write a comment..."
+    />
+    <button className="text-blue-500 text-2xl ml-2 transform hover:scale-110">
+        ➤
+    </button>
+</div>
 
-                    </div>
+</div>
                 ))
             )}
         </div>
