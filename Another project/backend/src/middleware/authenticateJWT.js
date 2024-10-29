@@ -16,7 +16,7 @@ export const authenticateJWT = async (req, res, next) => {
         }
  
         if (!refreshToken) {
-            console.log("no refresh token")
+            console.log("no refresh token found")
             return res.status(401).json({ error: "Refresh token not found" });
             
         }

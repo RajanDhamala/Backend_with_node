@@ -132,11 +132,15 @@ const TweetLikeController = asyncHandler(async (req, res) => {
         return res.send(new ApiResponse(500, "Error in liking/unliking tweet"));
     }
 });
+
 const TweetCommentController = asyncHandler(async (req, res) => {
     const username = req.user.username;
     const { tweetId, comment } = req.body; 
-    console.log("TweetId:", tweetId); 
+    console.log("TweetId:", tweetId,username,comment); 
 
+    if(!comment){
+        return res.send(new ApiResponse(400,"Please provide a comment"));
+    }
   
     if (!username) {
         return res.status(400).send(new ApiResponse(400, "Please provide username"));
@@ -188,34 +192,38 @@ const TweetCommentController = asyncHandler(async (req, res) => {
 });
 
 
-const TweetCommentSender = asyncHandler(async (req,res)=>{
-
+const TweetCommentSender = asyncHandler(async (req, res) => {
     const username = req.user.username;
-    const tweetId = req.body;
+    const { tweetId } = req.body;
 
+    console.log("TweetId:", tweetId , username);
 
-    if(!username || !tweetId){
-        return res.send(new ApiResponse(400,"Please provide username and tweetId"));
+    if (!username || !tweetId) {
+        return res.send(new ApiResponse(400, "Please provide username and tweetId"));
     }
 
-    const existingUser=await User.findOne({username});
     const tweet = await TwitterPost.findById(tweetId)
-    .populate("comments.user", "username");
+        .populate("comments.user", "username");
 
-    if(!tweet){
-        return res.send(new ApiResponse(404,"Tweet not found"));
+    if (!tweet) {
+        return res.send(new ApiResponse(404, "Tweet not found"));
     }
 
-    const comments = tweet.comments.map(comment => ({
-        comment: comment.comment,
-        commentedAt: comment.commentedAt,
-        username: comment.user.username,
-        userphoto:existingUser.profileImage
-    }));
+    const commentsWithProfileImages = await Promise.all(
+        tweet.comments.map(async (comment) => {
+            const commenterUser = await User.findOne({ username: comment.user.username }, "ProfilePicture");
+            return {
+                comment: comment.comment,
+                commentedAt: comment.commentedAt,
+                username: comment.user.username,
+                userphoto: commenterUser ? commenterUser.ProfilePicture : ""
+            };
+        })
+    );
 
-    return res.send(new ApiResponse(200, "Successfully fetched comments from backend", comments));
+    return res.send(new ApiResponse(200, "Successfully fetched comments from backend", commentsWithProfileImages));
+});
 
-})
 
 export {
     UserPostController,

@@ -66,19 +66,39 @@ const GetTweets = () => {
         }
     };
 
-    const handleCommentToggle = (tweetId) => {
-        setOpenComments(prev => ({ ...prev, [tweetId]: !prev[tweetId] }));
+    const handleCommentToggle = async (tweetId) => {
+        if (openComments[tweetId]) {
+            setOpenComments(prev => ({ ...prev, [tweetId]: false }));
+        } else {
+            try {
+                const response = await axios.post(`http://localhost:8000/users/comment`,
+                    tweetId, {
+                    withCredentials: true,
+                });
+                const updatedComments = response.data.data;
+
+                setTweets(prevTweets =>
+                    prevTweets.map(tweet =>
+                        tweet.tweetId === tweetId
+                            ? { ...tweet, comments: updatedComments }
+                            : tweet
+                    )
+                );
+                setOpenComments(prev => ({ ...prev, [tweetId]: true }));
+            } catch (error) {
+                console.error('Error fetching comments', error);
+            }
+        }
     };
 
     const handleCommentChange = (e) => {
         setCommentText(e.target.value);
     };
 
-    const handleCommentSubmit = async (tweetId, commentText) => {
+    const handleCommentSubmit = async (tweetId) => {
+        if (!commentText.trim()) return;
+
         try {
-           
-            console.log("Submitting comment:", { tweetId, comment: commentText });
-    
             const response = await axios.post('http://localhost:8000/users/comment', {
                 tweetId,
                 comment: commentText,
@@ -88,24 +108,22 @@ const GetTweets = () => {
                 },
                 withCredentials: true,
             });
-    
-            const updatedComments = response.data.data; 
+
+            const updatedComments = response.data.data;
 
             setTweets(prevTweets =>
                 prevTweets.map(tweet =>
                     tweet.tweetId === tweetId
-                        ? { ...tweet, comments: updatedComments } 
+                        ? { ...tweet, comments: updatedComments }
                         : tweet
                 )
             );
-    
 
             setCommentText('');
         } catch (error) {
             console.error('Error submitting comment', error);
         }
     };
-    
 
     return (
         <div className="tweets-list mx-7">
@@ -116,8 +134,8 @@ const GetTweets = () => {
                 tweets.map(tweet => (
                     <div key={tweet.tweetId} className="tweet border p-4 mb-4 rounded bg-gray-200">
                         <div className='flex items-center gap-x-1'>
-                            <div className='overflow:hidden  h-10 w-10'>
-                                <img src="https://res.cloudinary.com/dvzx1oyy1/image/upload/v1730106699/profile_images/pgshzcuzbopr3zjhuw5h.jpg" alt={tweet.owner + " image"} className='h-full w-full object-cover object-center rounded-full'/>
+                            <div className='overflow-hidden h-10 w-10'>
+                                <img src="https://res.cloudinary.com/dvzx1oyy1/image/upload/v1730106699/profile_images/pgshzcuzbopr3zjhuw5h.jpg" alt={`${tweet.owner} image`} className='h-full w-full object-cover object-center rounded-full'/>
                             </div>
                             <div>
                                 <h3 className="font-semibold text-sm text-gray-500 opacity-80">{tweet.owner}</h3>
@@ -154,11 +172,11 @@ const GetTweets = () => {
                                 <div className="flex flex-col space-y-2">
                                     {(tweet.comments || []).map((comment, index) => (
                                         <div key={index} className="comment flex items-center border-b py-2">
-                                            <div className='overflow:hidden  h-8 w-8'>
-                                                <img src="https://example.com/path/to/user/photo" alt={`${comment.username} profile`} className='h-full w-full object-cover object-center rounded-full'/>
+                                            <div className='overflow-hidden h-8 w-8'>
+                                                <img src={comment.userphoto} alt={`${comment.username} profile`} className='h-full w-full object-cover object-center rounded-full'/>
                                             </div>
                                             <div className="ml-2">
-                                                <p className="font-semibold">{comment.username || "User"}</p> {/* Adjust as necessary */}
+                                                <p className="font-semibold">{comment.username || "User"}</p>
                                                 <p className="text-sm">{comment.comment}</p>
                                                 <p className="text-xs text-gray-500">{timeAgo(comment.commentedAt)}</p>
                                             </div>
