@@ -71,3 +71,6 @@ const FileUpload = () => {
 };
 
 export default FileUpload;
+
+
+mongodb+srv://joshepgosh:<db_password>@cluster0.muz1t.mongodb.net/

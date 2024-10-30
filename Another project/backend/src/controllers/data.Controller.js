@@ -257,6 +257,23 @@ const handelVideopost = asyncHandler(async (req, res) => {
       );
     }
   });
+
+  const sendprofile=asyncHandler(async(req,res)=>{
+    try {
+        const userDetail = await User.findById(req.user.id); 
+
+        if (!userDetail) {
+            return res.send(new ApiResponse(404, "User not found"));
+        }
+
+        const { password, ...userData } = userDetail.toObject(); 
+        res.send(new ApiResponse(200, "Success", userData)); 
+
+    } catch (err) {
+        console.error("Error retrieving user details:", err); 
+        res.status(500).send(new ApiResponse(500, "Error retrieving user details")); 
+    }   
+})
   
  
 export {
@@ -267,5 +284,6 @@ export {
     generateAccessToken,
     genrateRefreshToken,
     uploadVideoPhoto,
-    handelVideopost
+    handelVideopost,
+    sendprofile
 }

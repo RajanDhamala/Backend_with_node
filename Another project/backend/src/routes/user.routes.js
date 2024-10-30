@@ -1,7 +1,7 @@
 import express from "express";
 import { getJokes}  from "../controllers/user.controller.js";
 import {loginUser,changeUsername,handelImg,
-registerUser, uploadVideoPhoto, handelVideopost } from "../controllers/data.Controller.js";
+registerUser, uploadVideoPhoto, handelVideopost,sendprofile } from "../controllers/data.Controller.js";
 import upload from "../middleware/multerMiddle.js";
 
 import { authenticateJWT } from "../middleware/authenticateJWT.js";
@@ -26,22 +26,9 @@ route.get("/logout", (req, res) => {
     res.send("Logged out");
 });
 
-route.get("/profile", authenticateJWT, async (req, res) => {
-    try {
-        const userDetail = await User.findById(req.user.id); 
+route.get("/profile", authenticateJWT, sendprofile)
+ 
 
-        if (!userDetail) {
-            return res.send(new ApiResponse(404, "User not found"));
-        }
-
-        const { password, ...userData } = userDetail.toObject(); 
-        res.send(new ApiResponse(200, "Success", userData)); 
-
-    } catch (err) {
-        console.error("Error retrieving user details:", err); 
-        res.status(500).send(new ApiResponse(500, "Error retrieving user details")); 
-    }
-});
 
 
 route.post("/changeUsername", changeUsername);
