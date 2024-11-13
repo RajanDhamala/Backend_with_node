@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler";
 import User from "../models/user.model";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import speakeasy from "speakeasy";
 
 dotenv.config();
 
@@ -16,7 +17,6 @@ const Transponder=nodemailer.createTransport({
 
 const sendOtpEmail=async(recipientEmail,otp)=>{
     try{
-
         await Transponder.sendMail({
             from:process.env.EMAIL,
             to:recipientEmail,
@@ -29,5 +29,9 @@ const sendOtpEmail=async(recipientEmail,otp)=>{
     }catch(error){
         console.log("Error while sending email",error);
     }
+}
+
+function otpgeneration(){
+    
 }
 
