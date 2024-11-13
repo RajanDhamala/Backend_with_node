@@ -1,6 +1,6 @@
 import connectDB from "./db/index.js";
 import dotenv from "dotenv";
-import { app } from "./app.js";  // Make sure to import `app` from `app.js`
+import { app } from "./app.js";  
 
 
 dotenv.config({
@@ -22,8 +22,6 @@ connectDB()
 app.get("/", (req, res) => {
     res.send("Hello World");
 });
-
-
 
 app.get("/try", (req, res) => {
     // Ensure that the path is absolute
