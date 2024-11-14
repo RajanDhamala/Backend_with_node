@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 
 function RegisterUser() {
-  const [message, setMessage] = useState(''); // State to hold success/failure message
-  const [isSuccess, setIsSuccess] = useState(null); // State to hold success or failure (true/false)
+  const [message, setMessage] = useState(''); 
+  const [isSuccess, setIsSuccess] = useState(null); 
   const username = useRef('');
   const password = useRef('');
   const email = useRef('');

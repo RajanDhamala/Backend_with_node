@@ -8,6 +8,7 @@ import { authenticateJWT } from "../middleware/authenticateJWT.js";
 import User from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {UserPostController,sendTweetsToUser,TweetLikeController,TweetCommentSender,TweetCommentController} from "../controllers/UserPost.controller.js";
+import {otpgeneration,sendOtpEmail, VerifyOtp} from "../controllers/otpVerification.js"
 
 
 const route=express.Router();
@@ -29,8 +30,6 @@ route.get("/logout", (req, res) => {
 route.get("/profile", authenticateJWT, sendprofile)
  
 
-
-
 route.post("/changeUsername", changeUsername);
 
 route.get("/jokes", getJokes);
@@ -48,6 +47,28 @@ route.post("/likeTweets", authenticateJWT, TweetLikeController);
 route.post("/commentTweets", authenticateJWT, TweetCommentSender);
 
 route.post("/comment", authenticateJWT, TweetCommentController);
+
+route.post("/getOtp",async (req,res)=>{
+    const {email}=req.body;
+
+    const otp=otpgeneration();
+    const emailsent=await sendOtpEmail(email,otp);
+    console.log(emailsent , otp);
+})
+
+route.post("/verifyOtp",async (req,res)=>{
+    const {email,otp}=req.body;
+    const isVerified=VerifyOtp(otp);
+
+    if(isVerified){
+        return res.send(new ApiResponse(200,"OTP verified successfully"));
+    }else{
+        return res.send(new ApiResponse(400,"OTP verification failed"));
+    }
+
+})
+
+
 
 
 
