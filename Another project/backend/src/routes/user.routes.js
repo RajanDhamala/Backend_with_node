@@ -56,6 +56,8 @@ route.post("/getOtp",async (req,res)=>{
     const emailsent=await sendOtpEmail(email,otp);
     console.log(emailsent , otp);
 
+    return res.send(new ApiResponse(200,"success"));
+
     
 })
 
