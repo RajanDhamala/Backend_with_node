@@ -49,11 +49,14 @@ route.post("/commentTweets", authenticateJWT, TweetCommentSender);
 route.post("/comment", authenticateJWT, TweetCommentController);
 
 route.post("/getOtp",async (req,res)=>{
+    
     const {email}=req.body;
-
+    console.log(process.env.EMAIL ,process.env.PASSWORD);
     const otp=otpgeneration();
     const emailsent=await sendOtpEmail(email,otp);
     console.log(emailsent , otp);
+
+    
 })
 
 route.post("/verifyOtp",async (req,res)=>{

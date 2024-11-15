@@ -9,6 +9,7 @@ import UploadVideoPhoto from './componnets/UploadVideoPhoto';
 import VideoGallery from './componnets/videoGallary';
 import DoTwitterPost from './componnets/DotwitterPost';
 import GetTweets from './componnets/GetTweets';
+import OtpRequest from './otp/otpRequest';
 
 function App() {
   const handleLogout = async () => {
@@ -37,6 +38,7 @@ function App() {
           <Link to="/videos" className='hover:underline'>User Uploads</Link>
           <Link to="/doTwitterPost" className='hover:underline'>Do Twitter Post</Link>
           <Link to="/tweets" className='hover:underline'>Get Tweets</Link>
+          <Link to="/otp" className='hover:underline'>Get otp</Link>
           <button
             onClick={handleLogout}
             className='bg-red-500 text-white h-5 w-16 px-2 flex items-center  rounded hover:bg-red-600'
@@ -53,6 +55,7 @@ function App() {
           <Route path="/videos" element={<VideoGallery />} />
           <Route path="/doTwitterPost" element={<DoTwitterPost />} />
           <Route path="/tweets" element={<GetTweets />} />
+          <Route path="/otp" element={<OtpRequest/>} />
         </Routes>
       </div>
     </Router>
