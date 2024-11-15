@@ -5,10 +5,11 @@ const OtpRequest = () => {
   const [otp, setOtp] = useState("");
   const [showOtpForm, setShowOtpForm] = useState(false);
   const [message, setMessage] = useState("");
+  const [isSending, setIsSending] = useState(false); // State to handle button disable
 
   const handleSendOtp = async () => {
+    setIsSending(true);
     try {
-      console.log(email);
       const response = await fetch("http://localhost:8000/users/getOtp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -24,14 +25,15 @@ const OtpRequest = () => {
       }
     } catch (error) {
       setMessage("An error occurred while sending OTP");
+    } finally {
+      setIsSending(false);
     }
   };
 
-  
   const handleVerifyOtp = async () => {
-    console.log(email);
+    setIsSending(true);
     try {
-      const response = await fetch("http://localhost:5000/verify-otp", {
+      const response = await fetch("http://localhost:8000/users/verifyOtp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp }),
@@ -45,6 +47,8 @@ const OtpRequest = () => {
       }
     } catch (error) {
       setMessage("An error occurred while verifying OTP");
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -62,9 +66,14 @@ const OtpRequest = () => {
           />
           <button
             onClick={handleSendOtp}
-            className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-200"
+            disabled={isSending}
+            className={`w-full py-2 rounded-md transition duration-200 ${
+              isSending
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600 text-white"
+            }`}
           >
-            Send OTP
+            {isSending ? "Sending..." : "Send OTP"}
           </button>
         </div>
       ) : (
@@ -79,9 +88,14 @@ const OtpRequest = () => {
           />
           <button
             onClick={handleVerifyOtp}
-            className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-200"
+            disabled={isSending}
+            className={`w-full py-2 rounded-md transition duration-200 ${
+              isSending
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600 text-white"
+            }`}
           >
-            Verify OTP
+            {isSending ? "Verifying..." : "Verify OTP"}
           </button>
         </div>
       )}
