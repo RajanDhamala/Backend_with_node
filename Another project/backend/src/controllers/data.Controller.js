@@ -8,7 +8,6 @@ import jwt from "jsonwebtoken";
 import UserVideoPhoto from "../models/userVideoPhoto.model.js";
 
 
-
 const registerUser=asyncHandler(async(req,res)=>{
     const {username,email,password,fullname}=req.body;
     console.log(username,email,password,fullname)
@@ -28,7 +27,6 @@ const registerUser=asyncHandler(async(req,res)=>{
     }
 
     const hashedPassword= await bcrypt.hash(password,10);
-
     const newUser=new User({
         username,
         email,
@@ -40,7 +38,6 @@ const registerUser=asyncHandler(async(req,res)=>{
     res.send(
         new ApiResponse(201, "Success", newUser)
     )
-   
 })
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -275,7 +272,6 @@ const handelVideopost = asyncHandler(async (req, res) => {
     }   
 })
   
- 
 export {
     registerUser,
     loginUser,

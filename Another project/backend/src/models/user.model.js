@@ -21,6 +21,9 @@ const userSchema=new mongoose.Schema({
     },RefreshToken:{
         type:String,
         require:false
+    },isEmailVerified:{
+        type:Boolean,
+        default:false
     }
 },{timestamps:true});
 
