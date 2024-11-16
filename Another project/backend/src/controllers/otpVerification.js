@@ -21,7 +21,12 @@ const sendOtpEmail = async (recipientEmail, otp) => {
             from: process.env.EMAIL,
             to: recipientEmail,
             subject: "OTP Verification",
-            text: `Your OTP is ${otp}`
+            html: `
+                <div style="font-size: 20px; font-family: Arial, sans-serif; color: #333;">
+                    <p><strong>Your OTP is:</strong> <span style="color: blue;">${otp}</span></p>
+                    <p>Please use this OTP to verify your email address.</p>
+                </div>
+            `
         });
 
         console.log("OTP sent successfully");
