@@ -1,5 +1,9 @@
 import express from 'express';
 
-const app=express.Router()
+const route=express.Router();
 
-export default {app}
+route.get("/user",(req,res)=>{
+    res.send("Hello User")
+})
+
+export default route
