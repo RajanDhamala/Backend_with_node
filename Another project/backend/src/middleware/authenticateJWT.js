@@ -37,7 +37,6 @@ export const authenticateJWT = async (req, res, next) => {
             }
 
             const newAccessToken = generateAccessToken(existingUser);
-
             res.cookie("accessToken", newAccessToken, {
                 httpOnly: true,
                 secure: true,
