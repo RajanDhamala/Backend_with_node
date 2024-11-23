@@ -1,9 +1,7 @@
 import express from 'express';
-
+import {registerUser} from '../controller/ManageUsr.js';
 const route=express.Router();
 
-route.get("/user",(req,res)=>{
-    res.send("Hello User")
-})
+route.post("/register",registerUser);
 
 export default route

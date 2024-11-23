@@ -6,7 +6,7 @@ dotenv.config();
 
 const connectDb=async()=>{
     try{
-        const connectionInstance=await mongoose.connect(`${process.env.MONGO_URI}/${"Register_User"}`);
+        const connectionInstance=await mongoose.connect(`${process.env.MONGO_URI}/${"ChatApp"}`);
         console.log("Connected with ....",connectionInstance.connection.host)
 
     }catch(error){

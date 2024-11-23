@@ -16,11 +16,6 @@ app.use(cors(
     }
 ))
 
-app.get("/rajan",(req,res)=>{
-    res.send('<h1>hello rajan bhai</h1>')
-})
-
 app.use("/api",route)
-
 
 export default app
