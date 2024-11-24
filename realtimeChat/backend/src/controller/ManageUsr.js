@@ -130,10 +130,20 @@ const UserProfile=asyncHandler(async (req,res)=>{
     return res.json(new ApiResponse(200,"user found",data))
 })
 
+const uploadProfilePic=asyncHandler(async (req,res)=>{
+    console.log("Uploading profile pic");
+
+    if(!req.file){
+        return res.json(new ApiResponse(400,"Please provide a file",null));
+    }
+    console.log("req.file:",req.file);
+
+})
 
 export {
     registerUser,
     LoginUser,
     LogoutUser,
-    UserProfile
+    UserProfile,
+    uploadProfilePic
 };

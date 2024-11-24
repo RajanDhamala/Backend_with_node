@@ -13,6 +13,7 @@ export const JwtAuthenticate = asyncHandler(async (req, res, next) => {
         if (!refreshToken) {
             return res.status(401).json(new ApiResponse(401, "No tokens provided", null));
         }
+
         try {
             const decodedRefreshToken = jwt.verify(refreshToken, process.env.Refresh_Secret);
             const user = await User.findOne({ email: decodedRefreshToken.email });
@@ -20,8 +21,6 @@ export const JwtAuthenticate = asyncHandler(async (req, res, next) => {
             if (!user || user.RefreshToken !== refreshToken) {
                 return res.status(401).json(new ApiResponse(401, "Invalid refresh token", null));
             }
-
-         
             const newAccessToken = jwt.sign(
                 { userId: user._id, username: user.username, email: user.email },
                 process.env.Access_Secret,
@@ -37,20 +36,20 @@ export const JwtAuthenticate = asyncHandler(async (req, res, next) => {
             user.RefreshToken = newRefreshToken;
             await user.save();
 
-            res.cookie("accessToken", newAccessToken, { httpOnly: true, secure: true });
-            res.cookie("refreshToken", newRefreshToken, { httpOnly: true, secure: true });
+            res.cookie("accessToken", newAccessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+            res.cookie("refreshToken", newRefreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
 
             req.user = { userId: user._id, username: user.username, email: user.email };
+
             return next();
         } catch (error) {
             return res.status(401).json(new ApiResponse(401, "Invalid or expired refresh token", null));
         }
     }
 
-   
     try {
         const decodedAccessToken = jwt.verify(accessToken, process.env.Access_Secret);
-        req.user = decodedAccessToken;
+        req.user = decodedAccessToken; 
         return next();
     } catch (error) {
         return res.status(401).json(new ApiResponse(401, "Invalid or expired access token", null));

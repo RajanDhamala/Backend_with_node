@@ -36,7 +36,12 @@ const userSchema = new Schema({
     },birthDate:{
         type:Date,
         required:false
-    }
+    },activeChats: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Chat'
+        }
+    ]
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);
