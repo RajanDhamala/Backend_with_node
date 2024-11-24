@@ -9,9 +9,8 @@ function UserLogin() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    setLoading(true); // Set loading state
-    setMessage(""); // Clear previous message
-
+    setLoading(true); 
+    setMessage(""); 
     axios
       .post(
         "http://localhost:8000/api/login",
@@ -23,11 +22,11 @@ function UserLogin() {
       )
       .then((response) => {
         setMessage(response.data.message);
-        setLoading(false); // Reset loading state
+        setLoading(false); 
       })
       .catch((err) => {
         setMessage(err.response?.data?.message || "An error occurred.");
-        setLoading(false); // Reset loading state
+        setLoading(false); 
       });
   };
 
@@ -37,7 +36,7 @@ function UserLogin() {
         <section>
           <form
             className="max-w-sm mx-auto"
-            onSubmit={(e) => handleLogin(e)} // Prevent default form submission
+            onSubmit={(e) => handleLogin(e)} 
           >
             <div className="mb-5">
               <label
@@ -95,7 +94,7 @@ function UserLogin() {
             </button>
           </form>
 
-          {/* Display message */}
+      
           {message && (
             <div
               className={`mt-5 p-3 rounded-lg ${

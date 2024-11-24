@@ -1,6 +1,6 @@
 import User from '../models/User.Model.js';
 import jwt from 'jsonwebtoken';
-import {asyncHandler} from '../utils/asyncHandler.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 import dotenv from 'dotenv';
 import { ApiResponse } from '../utils/ApiResponse.js';
 
@@ -10,28 +10,20 @@ export const JwtAuthenticate = asyncHandler(async (req, res, next) => {
     const { refreshToken, accessToken } = req.cookies;
 
     if (!accessToken) {
-        return res.json(new ApiResponse(401, "Access token not found"));
-    }
-
-    try {
-        const decodedAccessToken = jwt.verify(accessToken, process.env.Access_Secret);
-        req.user = decodedAccessToken;
-        return next();
-    } catch (error) {
         if (!refreshToken) {
-            return res.json(new ApiResponse(401, "Refresh token not found"));
+            return res.status(401).json(new ApiResponse(401, "No tokens provided", null));
         }
-
         try {
             const decodedRefreshToken = jwt.verify(refreshToken, process.env.Refresh_Secret);
             const user = await User.findOne({ email: decodedRefreshToken.email });
 
             if (!user || user.RefreshToken !== refreshToken) {
-                return res.json(new ApiResponse(401, "Invalid refresh token"));
+                return res.status(401).json(new ApiResponse(401, "Invalid refresh token", null));
             }
 
+         
             const newAccessToken = jwt.sign(
-                { userId: user._id, username: user.username },
+                { userId: user._id, username: user.username, email: user.email },
                 process.env.Access_Secret,
                 { expiresIn: "15m" }
             );
@@ -48,10 +40,19 @@ export const JwtAuthenticate = asyncHandler(async (req, res, next) => {
             res.cookie("accessToken", newAccessToken, { httpOnly: true, secure: true });
             res.cookie("refreshToken", newRefreshToken, { httpOnly: true, secure: true });
 
-            req.user = { userId: user._id, username: user.username };
+            req.user = { userId: user._id, username: user.username, email: user.email };
             return next();
-        } catch (refreshError) {
-            return res.json(new ApiResponse(401, "Invalid or expired refresh token"));
+        } catch (error) {
+            return res.status(401).json(new ApiResponse(401, "Invalid or expired refresh token", null));
         }
+    }
+
+   
+    try {
+        const decodedAccessToken = jwt.verify(accessToken, process.env.Access_Secret);
+        req.user = decodedAccessToken;
+        return next();
+    } catch (error) {
+        return res.status(401).json(new ApiResponse(401, "Invalid or expired access token", null));
     }
 });

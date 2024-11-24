@@ -2,6 +2,7 @@ import ChatUi from './componnets/ChatUi';
 import UserLogin from './componnets/UserLogin';
 import UserRegister from './componnets/UserRegister';
 import { BrowserRouter, Route, Routes, Link } from "react-router-dom";
+import  UserProfile from './componnets/UserProfile';
 import axios from 'axios';
 
 function App() {
@@ -24,13 +25,16 @@ function App() {
           </Link>
           <Link to="/register" className='text-blue-500 hover:underline'>
           Register</Link>
+          <Link to={'/UserProfile'} className='text-blue-500 hover:underline'>Profile</Link>
           <button onClick={(e)=>LogoutUser()} className='bg-red-500 text-white rounded-md px-2 hover:bg-red-600 hover:scale-105'>Logout</button>
+         
 
         </div>
         <Routes>
           <Route path="/login" element={<UserLogin />} />
           <Route path="/chat" element={<ChatUi />} />
           <Route path="/register" element={<UserRegister />} />
+          <Route path='/UserProfile' element={<UserProfile/>}></Route>
         </Routes>
       </BrowserRouter>
     </>

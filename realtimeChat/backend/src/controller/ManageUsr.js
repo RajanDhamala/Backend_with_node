@@ -110,9 +110,30 @@ const LogoutUser = asyncHandler(async (req, res) => {
     });
 });
 
+const UserProfile=asyncHandler(async (req,res)=>{
+    const userEmail=req.user.email;
+    console.log("User email:",userEmail);
+    const user=await User.findOne({email:userEmail});
+
+    console.log("User:",user);
+
+    if(!user){
+        return res.json(new ApiResponse(400,"User not found",null));
+    }
+    const data={
+        username:user.username,
+        dob:user.dob,
+        email:user.email,
+        profilePic:user.profilePic,
+        dob:user.birthDate
+    }
+    return res.json(new ApiResponse(200,"user found",data))
+})
+
 
 export {
     registerUser,
     LoginUser,
-    LogoutUser
+    LogoutUser,
+    UserProfile
 };
