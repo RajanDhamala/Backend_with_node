@@ -33,6 +33,9 @@ const userSchema = new Schema({
         type: String,
         maxlength: 6,
         required: false
+    },birthDate:{
+        type:Date,
+        required:false
     }
 }, { timestamps: true });
 

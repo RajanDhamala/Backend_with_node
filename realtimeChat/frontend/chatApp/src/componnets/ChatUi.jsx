@@ -1,7 +1,7 @@
 import React from 'react';
 import Message from '../componnets/Message';
 
-function App() {
+function ChatUi() {
   const sampleMessage = {
     profileImage: 'https://imgs.search.brave.com/oT0gpIFMOHFGCkkbmRE9vczNQOhZl7SDDSX2ppZ027I/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4u/cGl4YWJheS5jb20v/cGhvdG8vMjAxNy8x/MS8xOS8wNy8zMC9n/aXJsLTI5NjE5NTlf/NjQwLmpwZw',
     senderName: 'Bonnie Green',
@@ -18,4 +18,4 @@ function App() {
   );
 }
 
-export default App;
+export default ChatUi;

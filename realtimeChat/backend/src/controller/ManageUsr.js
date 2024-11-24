@@ -6,10 +6,10 @@ import { generateAccessToken,generateRefreshToken} from '../utils/JWTokenCreate.
 
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { username, email, password } = req.body;
-    console.log(username, email, password);
+    const { username, email, password,birthDate } = req.body;
+    console.log(username, email, password,birthDate);
 
-    if (!username || !email || !password) {
+    if (!username || !email || !password ||!birthDate) {
         res.json(new ApiResponse(400, "Please provide all the fields", null));
         throw new Error("Please provide all the fields");
     }
@@ -25,7 +25,8 @@ const registerUser = asyncHandler(async (req, res) => {
         const newUser = new User({
             username,
             email,
-            password:hashedPassword
+            password:hashedPassword,
+            birthDate
         });
         const savedUsr = await newUser.save();
         if (savedUsr) {
