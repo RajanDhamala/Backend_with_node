@@ -2,8 +2,16 @@ import ChatUi from './componnets/ChatUi';
 import UserLogin from './componnets/UserLogin';
 import UserRegister from './componnets/UserRegister';
 import { BrowserRouter, Route, Routes, Link } from "react-router-dom";
+import axios from 'axios';
 
 function App() {
+  const LogoutUser=()=>{
+    axios.get('http://localhost:8000/api/logout',{withCredentials:true}).then((response)=>{
+      alert(response.data.message)
+    }).catch((err)=>{
+      alert(err.response?.data?.message || "An error occurred.")
+    })
+  }
   return (
     <>
       <BrowserRouter>
@@ -16,6 +24,8 @@ function App() {
           </Link>
           <Link to="/register" className='text-blue-500 hover:underline'>
           Register</Link>
+          <button onClick={(e)=>LogoutUser()} className='bg-red-500 text-white rounded-md px-2 hover:bg-red-600 hover:scale-105'>Logout</button>
+
         </div>
         <Routes>
           <Route path="/login" element={<UserLogin />} />

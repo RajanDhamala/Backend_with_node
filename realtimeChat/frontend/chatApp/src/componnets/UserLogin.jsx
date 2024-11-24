@@ -1,160 +1,116 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const UserLogin = () => {
-  const [username, setUsername] = useState("");
+function UserLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-  const [dob, setDob] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const submitForm = () => {
-    setLoading(true);
-    setMessage("");
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setLoading(true); // Set loading state
+    setMessage(""); // Clear previous message
+
     axios
-      .post("http://localhost:8000/api/register", {
-        username: username,
-        password: password,
-        email: email,
-        birthDate: dob,
-      })
-      .then((res) => {
-        setLoading(false);
-        setMessage(res.data.message);
+      .post(
+        "http://localhost:8000/api/login",
+        {
+          email,
+          password,
+        },
+        { withCredentials: true }
+      )
+      .then((response) => {
+        setMessage(response.data.message);
+        setLoading(false); // Reset loading state
       })
       .catch((err) => {
-        setLoading(false);
-        setMessage("An error occurred during registration.");
-        console.error(err);
+        setMessage(err.response?.data?.message || "An error occurred.");
+        setLoading(false); // Reset loading state
       });
   };
 
   return (
-    <div className="flex flex-col justify-center font-[sans-serif] sm:h-screen p-4 bg-gray-300">
-      <div className="max-w-md w-full mx-auto border border-gray-300 rounded-2xl p-8 bg-white">
-        <div className="text-center mb-3">
-          <a href="">
-            <img
-              src="https://imgs.search.brave.com/E8bwxfJO_KMM8GuJK6d0UXjoA-D_4eNRTYN-fP3q92I/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9wcmV2/aWV3LnJlZGQuaXQv/d2hhdHMtdGhlLWZv/bnQtdXNlZC1pbi10/aGUtbG9nby12MC14/ZHJzMWZzZDA5Y2Ex/LnBuZz9hdXRvPXdl/YnAmcz04MmViZDU4/NDhlNmNlMTk3ZDg0/MmFlNDI1MzRmNmM0/NDk3MDM2MjAz"
-              alt="logo"
-              className="h-12 inline-block"
-            />
-          </a>
-        </div>
-
-      
-
-        <form>
-          <div className="space-y-6">
-            <div>
-              <label className="text-gray-800 text-sm mb-2 block">Username</label>
+    <>
+      <div className="top-40 relative">
+        <section>
+          <form
+            className="max-w-sm mx-auto"
+            onSubmit={(e) => handleLogin(e)} // Prevent default form submission
+          >
+            <div className="mb-5">
+              <label
+                htmlFor="email"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Your email
+              </label>
               <input
-                required
-                name="username"
-                type="text"
-                className="text-gray-800 bg-white border border-gray-300 w-full text-sm px-4 py-3 rounded-md outline-blue-500"
-                placeholder="Enter username"
-                onChange={(e) => setUsername(e.target.value)}
-                value={username}
-              />
-            </div>
-
-            <div>
-              <label className="text-gray-800 text-sm mb-2 block">Email Id</label>
-              <input
-                required
-                name="email"
-                type="text"
-                className="text-gray-800 bg-white border border-gray-300 w-full text-sm px-4 py-3 rounded-md outline-blue-500"
-                placeholder="Enter email"
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                id="email"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="name@example.com"
+                required
               />
             </div>
-            <div>
-              <label className="text-gray-800 text-sm mb-2 block">Password</label>
+            <div className="mb-5">
+              <label
+                htmlFor="password"
+                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Your password
+              </label>
               <input
-                required
-                name="password"
                 type="password"
-                className="text-gray-800 bg-white border border-gray-300 w-full text-sm px-4 py-3 rounded-md outline-blue-500"
-                placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                id="password"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                required
               />
             </div>
-
-            <div>
-              <label className="text-gray-800 text-sm mb-2 block">Date of Birth</label>
-              <input
-                required
-                name="date"
-                type="date"
-                className="text-gray-800 bg-white border border-gray-300 w-full text-sm px-4 py-3 rounded-md outline-blue-500"
-                placeholder="Enter Dob"
-                value={dob}
-                onChange={(e) => setDob(e.target.value)}
-              />
-            </div>
-
-            <div className="flex items-center">
-              <input
-                required
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 shrink-0 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
+            <div className="flex items-start mb-5">
+              <div className="flex items-center h-5">
+                <input
+                  id="remember"
+                  type="checkbox"
+                  className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
+                />
+              </div>
               <label
-                htmlFor="remember-me"
-                className="text-gray-800 ml-3 block text-sm"
+                htmlFor="remember"
+                className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
               >
-                I accept the{" "}
-                <a className="text-blue-600 font-semibold hover:underline ml-1">
-                  Terms and Conditions
-                </a>
+                Remember me
               </label>
             </div>
-          </div>
-
-          <div className="!mt-12">
             <button
-              type="button"
-              className="w-full py-3 px-4 text-sm tracking-wider font-semibold rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
-              onClick={submitForm}
+              type="submit"
+              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
             >
-              Create an account
+              {loading ? "Loading..." : "Submit"}
             </button>
-            {loading && (
-          <div className="flex justify-center items-center mb-4">
-            <div className="loader ease-linear rounded-full border-4 border-t-4 border-blue-500 h-6 w-6"></div>
-            <span className="ml-3 text-sm text-gray-600">Processing...</span>
-          </div>
-        )}
+          </form>
 
-        {message && (
-          <div
-            className={`text-sm p-3 mb-4 rounded-md ${
-              message.toLowerCase().includes("error")
-                ? "bg-red-100 text-red-600"
-                : "bg-green-100 text-green-600"
-            }`}
-          >
-            {message}
-          </div>
-        )}
-          </div>
-          <p className="text-gray-800 text-sm mt-6 text-center">
-            Already have an account?{" "}
-            <a className="text-blue-600 font-semibold hover:underline ml-1">
-              Login here
-            </a>
-          </p>
-        </form>
+          {/* Display message */}
+          {message && (
+            <div
+              className={`mt-5 p-3 rounded-lg ${
+                message.includes("error") || message.includes("invalid")
+                  ? "bg-red-500 text-white"
+                  : "bg-green-500 text-white"
+              }`}
+            >
+              {message}
+            </div>
+          )}
+        </section>
       </div>
-    </div>
+    </>
   );
-};
+}
 
 export default UserLogin;
