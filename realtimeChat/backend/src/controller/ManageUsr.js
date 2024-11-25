@@ -3,6 +3,8 @@ import User from '../models/User.Model.js';
 import { ApiResponse } from "../utils/ApiResponse.js";
 import bcrypt from 'bcrypt';
 import { generateAccessToken,generateRefreshToken} from '../utils/JWTokenCreate.js'
+import { uploadFileToCloudinary } from '../utils/Cloudinary.js';
+import fs from 'fs/promises';
 
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -130,20 +132,50 @@ const UserProfile=asyncHandler(async (req,res)=>{
     return res.json(new ApiResponse(200,"user found",data))
 })
 
-const uploadProfilePic=asyncHandler(async (req,res)=>{
-    console.log("Uploading profile pic");
-
-    if(!req.file){
-        return res.json(new ApiResponse(400,"Please provide a file",null));
+const handleUpload = asyncHandler(async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
     }
-    console.log("req.file:",req.file);
-
-})
+  
+    const isProfilePicture = req.body.isProfilePicture;
+    let folderName;
+    const fileName = req.file.filename; 
+  
+    if (isProfilePicture === 'true') {
+      folderName = 'Profile_pictures';
+    } else if (req.file.mimetype.startsWith('image/')) {
+      folderName = 'images';
+    } else if (req.file.mimetype.startsWith('video/')) {
+      folderName = 'videos';
+    } else if (req.file.mimetype === 'application/pdf') {
+      folderName = 'pdfs';
+    } else {
+      return res.status(400).json({ message: 'Unsupported file type' });
+    }
+  
+    try {
+      const fileUrl = await uploadFileToCloudinary(req.file.path, folderName, fileName);  
+  
+      await fs.unlink(req.file.path);
+  
+      const existingUser = await User.findOne({ email: 'rajandhamala0123@gmail.com' });
+  
+      if (isProfilePicture === 'true') {
+        existingUser.profilePic = fileUrl; 
+        await existingUser.save();
+      }
+  
+      res.status(200).json({ message: 'File uploaded successfully', url: fileUrl });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'File upload failed' });
+    }
+  });
 
 export {
     registerUser,
     LoginUser,
     LogoutUser,
     UserProfile,
-    uploadProfilePic
+    handleUpload
 };
