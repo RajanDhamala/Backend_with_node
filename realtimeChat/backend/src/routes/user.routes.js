@@ -14,8 +14,8 @@ route.get('/logout',LogoutUser)
 route.get('/UserProfile',JwtAuthenticate,UserProfile)
 route.post('/UploadProfilePic',upload.single('ProfilePic'),handleUpload)
 
-route.get('/OtpRequest',OtpHandeling);
-route.post('/OtpVerification',OtpVerification);
+route.get('/OtpRequest',JwtAuthenticate,OtpHandeling);
+route.post('/OtpVerification',JwtAuthenticate,OtpVerification);
 
 
 export default route

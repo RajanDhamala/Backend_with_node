@@ -4,9 +4,8 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import bcrypt from 'bcrypt';
 import { generateAccessToken,generateRefreshToken} from '../utils/JWTokenCreate.js'
 import { uploadFileToCloudinary } from '../utils/Cloudinary.js';
-import fs from 'fs/promises';
 import {otpGeneration,VerifyOtp} from '../utils/OtpGeneration.js';
-import nodemailer from 'nodemailer';
+import { sendOtpEmail } from '../utils/OtpGeneration.js';
 
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -177,21 +176,14 @@ const handleUpload = asyncHandler(async (req, res) => {
 
   const OtpHandeling=asyncHandler(async (req,res)=>{
 
-    const existingUser=await User.findOne({email:'rajandhamala0123@gmail.com'});
+    const existingUser=await User.findOne({email:req.user.email});
 
     const otp=otpGeneration();
     console.log(otp,"Generated OTP: for uer named",existingUser.username);
     try{
         const OtpUpdate=await existingUser.updateOne({UserOtp:otp});
-        const transporter = nodemailer.createTransport({
-            host: "smtp.ethereal.email",
-            port: 587,
-            secure: false, // true for port 465, false for other ports
-            auth: {
-              user: "maddison53@ethereal.email",
-              pass: "jn7jnAPss4f63QBp6D",
-            },
-          });
+        sendOtpEmail(existingUser.email,otp);
+        return res.json(new ApiResponse(200,"OTP sent successfully"));
 
     }catch(error){
         return res.json(new ApiResponse(500,"Server Error"));
@@ -199,17 +191,17 @@ const handleUpload = asyncHandler(async (req, res) => {
 
   })
 
-
   const OtpVerification=asyncHandler(async (req,res)=>{
-    const {email,otp}=req.body;
+    const {otp}=req.body;
 
-    const existingUser=await User.findOne({email});
+    const existingUser=await User.findOne({email:req.user.email});
 
     if(!existingUser){
         return res.json(new ApiResponse(400,"User does not exist",null));
     }
 
     const isVerified=VerifyOtp(otp);
+    const dbCheck=existingUser.UserOtp;
 
     if(!isVerified){
         return res.json(new ApiResponse(400,"Invalid OTP",null));
