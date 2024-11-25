@@ -5,6 +5,8 @@ import bcrypt from 'bcrypt';
 import { generateAccessToken,generateRefreshToken} from '../utils/JWTokenCreate.js'
 import { uploadFileToCloudinary } from '../utils/Cloudinary.js';
 import fs from 'fs/promises';
+import {otpGeneration,VerifyOtp} from '../utils/OtpGeneration.js';
+import nodemailer from 'nodemailer';
 
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -156,7 +158,7 @@ const handleUpload = asyncHandler(async (req, res) => {
     try {
       const fileUrl = await uploadFileToCloudinary(req.file.path, folderName, fileName);  
   
-      await fs.unlink(req.file.path);
+   
   
       const existingUser = await User.findOne({ email: 'rajandhamala0123@gmail.com' });
   
@@ -172,10 +174,60 @@ const handleUpload = asyncHandler(async (req, res) => {
     }
   });
 
+
+  const OtpHandeling=asyncHandler(async (req,res)=>{
+
+    const existingUser=await User.findOne({email:'rajandhamala0123@gmail.com'});
+
+    const otp=otpGeneration();
+    console.log(otp,"Generated OTP: for uer named",existingUser.username);
+    try{
+        const OtpUpdate=await existingUser.updateOne({UserOtp:otp});
+        const transporter = nodemailer.createTransport({
+            host: "smtp.ethereal.email",
+            port: 587,
+            secure: false, // true for port 465, false for other ports
+            auth: {
+              user: "maddison53@ethereal.email",
+              pass: "jn7jnAPss4f63QBp6D",
+            },
+          });
+
+    }catch(error){
+        return res.json(new ApiResponse(500,"Server Error"));
+    }
+
+  })
+
+
+  const OtpVerification=asyncHandler(async (req,res)=>{
+    const {email,otp}=req.body;
+
+    const existingUser=await User.findOne({email});
+
+    if(!existingUser){
+        return res.json(new ApiResponse(400,"User does not exist",null));
+    }
+
+    const isVerified=VerifyOtp(otp);
+
+    if(!isVerified){
+        return res.json(new ApiResponse(400,"Invalid OTP",null));
+    }
+
+    existingUser.verifiedUser=true;
+    await existingUser.save();
+
+    return res.json(new ApiResponse(200,"User verified successfully",null));
+
+  })
+
 export {
     registerUser,
     LoginUser,
     LogoutUser,
     UserProfile,
-    handleUpload
+    handleUpload,
+    OtpHandeling,
+    OtpVerification
 };

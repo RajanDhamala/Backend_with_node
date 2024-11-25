@@ -29,7 +29,7 @@ const userSchema = new Schema({
         type: String,
         default: ""
     },
-    OTPverify: {
+    UserOtp: {
         type: String,
         maxlength: 6,
         required: false
