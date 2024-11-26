@@ -12,7 +12,7 @@ route.post("/login",LoginUser);
 
 route.get('/logout',LogoutUser)
 route.get('/UserProfile',JwtAuthenticate,UserProfile)
-route.post('/UploadProfilePic',upload.single('ProfilePic'),handleUpload)
+route.post('/UploadProfilePic',JwtAuthenticate,upload.single('ProfilePic'),handleUpload)
 
 route.get('/OtpRequest',JwtAuthenticate,OtpHandeling);
 route.post('/OtpVerification',JwtAuthenticate,OtpVerification);

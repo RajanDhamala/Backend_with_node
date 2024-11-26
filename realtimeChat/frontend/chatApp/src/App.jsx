@@ -5,6 +5,7 @@ import { BrowserRouter, Route, Routes, Link } from "react-router-dom";
 import  UserProfile from './componnets/UserProfile';
 import axios from 'axios';
 import OtpComponent from './componnets/OtpComponent';
+import ChatApp from './componnets/ChatApp';
 
 function App() {
   const LogoutUser=()=>{
@@ -28,6 +29,7 @@ function App() {
           Register</Link>
           <Link to={'/UserProfile'} className='text-blue-500 hover:underline'>Profile</Link>
           <Link to={'/Otp'} className='text-blue-500 hover:underline'>Otp</Link>
+          <Link to={'/ChatApp'} className='text-blue-500 hover:underline'>ChatShocket</Link>
           <button onClick={(e)=>LogoutUser()} className='bg-red-500 text-white rounded-md px-2 hover:bg-red-600 hover:scale-105'>Logout</button>
          
 
@@ -38,6 +40,7 @@ function App() {
           <Route path="/register" element={<UserRegister />} />
           <Route path='/UserProfile' element={<UserProfile/>}></Route>
           <Route path='/Otp' element={<OtpComponent/>}></Route>
+          <Route path='/ChatApp' element={<ChatApp/>}></Route>
         </Routes>
       </BrowserRouter>
     </>

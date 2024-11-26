@@ -36,8 +36,8 @@ export const JwtAuthenticate = asyncHandler(async (req, res, next) => {
             user.RefreshToken = newRefreshToken;
             await user.save();
 
-            res.cookie("accessToken", newAccessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
-            res.cookie("refreshToken", newRefreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+            res.cookie("accessToken", newAccessToken, { httpOnly: true});
+            res.cookie("refreshToken", newRefreshToken, { httpOnly: true});
 
             req.user = { userId: user._id, username: user.username, email: user.email };
 

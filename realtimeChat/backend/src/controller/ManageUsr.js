@@ -6,6 +6,7 @@ import { generateAccessToken,generateRefreshToken} from '../utils/JWTokenCreate.
 import { uploadFileToCloudinary } from '../utils/Cloudinary.js';
 import {otpGeneration,VerifyOtp} from '../utils/OtpGeneration.js';
 import { sendOtpEmail } from '../utils/OtpGeneration.js';
+import e from 'express';
 
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -64,6 +65,8 @@ const LoginUser=asyncHandler ( async (req,res)=>{
     }
     const accessToken=generateAccessToken(existingUser);
     const refreshToken=generateRefreshToken(existingUser);
+    existingUser.RefreshToken=refreshToken;
+    existingUser.save();
 
     res.cookie(
         "refreshToken",refreshToken,
@@ -159,7 +162,7 @@ const handleUpload = asyncHandler(async (req, res) => {
   
    
   
-      const existingUser = await User.findOne({ email: 'rajandhamala0123@gmail.com' });
+      const existingUser = await User.findOne({ email: req.user.email });
   
       if (isProfilePicture === 'true') {
         existingUser.profilePic = fileUrl; 
@@ -203,11 +206,12 @@ const handleUpload = asyncHandler(async (req, res) => {
     const isVerified=VerifyOtp(otp);
     const dbCheck=existingUser.UserOtp;
 
-    if(!isVerified){
+    if(!isVerified && !dbCheck){
         return res.json(new ApiResponse(400,"Invalid OTP",null));
     }
 
     existingUser.verifiedUser=true;
+    existingUser.UserOtp=null;
     await existingUser.save();
 
     return res.json(new ApiResponse(200,"User verified successfully",null));
