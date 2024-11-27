@@ -241,15 +241,27 @@ const handleUpload = asyncHandler(async (req, res) => {
     }
   });
 
-  const aiImgAnalysis= asyncHandler(async (req,res)=>{
-    const {prompt}=req.body;
-
-    console.log("AI image analysis",req.file);
-
-    const data=await  handelImg(prompt,req.file.path);
-    console.log(data);
-    return res.send(new ApiResponse(200,"AI image analysis started response will be sent after a while",data));
-  })
+  const aiImgAnalysis = asyncHandler(async (req, res) => {
+    const { prompt } = req.body;
+    console.log("AI image analysis", req.file);
+    try {
+      const rawData = await handelImg(prompt, req.file.path);
+      const cleanedData = rawData.replace(/```json\n?|\n```/g, '').trim();
+      let parsedResult;
+      try {
+        parsedResult = JSON.parse(cleanedData);
+        if (!Array.isArray(parsedResult)) {
+          parsedResult = [{ key: 'response', description: cleanedData }];
+        }
+      } catch (e) {
+        parsedResult = [{ key: 'response', description: cleanedData }];
+      }
+      return res.send(new ApiResponse(200, "AI image analysis completed", parsedResult));
+    } catch (error) {
+      console.error("Error in AI image analysis:", error);
+      return res.status(500).json({ error: "AI image analysis failed." });
+    }
+  });
   
 
 export {
