@@ -1,4 +1,5 @@
 import multer from "multer";encodeURI
+import path from "path";
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -13,4 +14,4 @@ const storage = multer.diskStorage({
   
   const ImageAnalysis = multer({ storage: storage })
 
-  export default {ImageAnalysis};
+  export default ImageAnalysis;

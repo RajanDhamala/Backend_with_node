@@ -7,7 +7,6 @@ dotenv.config();
 const handelText=async(prompt)=>{
     const genAI = new GoogleGenerativeAI(process.env.Api_Key);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    
     const prompt2 = prompt;
     
     const result = await model.generateContent(prompt2);

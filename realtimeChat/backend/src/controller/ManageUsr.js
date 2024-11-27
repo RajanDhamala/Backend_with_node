@@ -240,6 +240,16 @@ const handleUpload = asyncHandler(async (req, res) => {
       return res.status(500).send(new ApiResponse(500, "Failed to process image", error.message));
     }
   });
+
+  const aiImgAnalysis= asyncHandler(async (req,res)=>{
+    const {prompt}=req.body;
+
+    console.log("AI image analysis",req.file);
+
+    const data=await  handelImg(prompt,req.file.path);
+    console.log(data);
+    return res.send(new ApiResponse(200,"AI image analysis started response will be sent after a while",data));
+  })
   
 
 export {
@@ -251,5 +261,6 @@ export {
     OtpHandeling,
     OtpVerification,
     handelAi,
-    handelAiImg
+    handelAiImg,
+    aiImgAnalysis
 };
