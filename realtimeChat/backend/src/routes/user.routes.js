@@ -3,6 +3,7 @@ import {JwtAuthenticate} from '../middleware/JwtAuthencate.js';
 import {registerUser,LoginUser,LogoutUser,UserProfile,handleUpload,OtpHandeling,
 OtpVerification,handelAi,handelAiImg} from '../controller/ManageUsr.js';
 import upload from '../middleware/MulterFileUpload.js';
+import ImageAnalysis from '../middleware/ImgUpload.js'
 
 
 const route=express.Router();
@@ -19,6 +20,8 @@ route.post('/OtpVerification',JwtAuthenticate,OtpVerification);
 
 route.get("/ai",handelAi)
 route.get('/aiImg',handelAiImg)
+
+route.post('/aiImg',ImageAnalysis.single('image'),aiImgAnalysis)
 
 
 export default route
