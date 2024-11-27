@@ -1,7 +1,7 @@
 import express from 'express';
 import {JwtAuthenticate} from '../middleware/JwtAuthencate.js';
 import {registerUser,LoginUser,LogoutUser,UserProfile,handleUpload,OtpHandeling,
-OtpVerification} from '../controller/ManageUsr.js';
+OtpVerification,handelAi,handelAiImg} from '../controller/ManageUsr.js';
 import upload from '../middleware/MulterFileUpload.js';
 
 
@@ -16,6 +16,9 @@ route.post('/UploadProfilePic',JwtAuthenticate,upload.single('ProfilePic'),handl
 
 route.get('/OtpRequest',JwtAuthenticate,OtpHandeling);
 route.post('/OtpVerification',JwtAuthenticate,OtpVerification);
+
+route.get("/ai",handelAi)
+route.get('/aiImg',handelAiImg)
 
 
 export default route

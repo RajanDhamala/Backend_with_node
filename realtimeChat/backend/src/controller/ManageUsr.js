@@ -6,7 +6,7 @@ import { generateAccessToken,generateRefreshToken} from '../utils/JWTokenCreate.
 import { uploadFileToCloudinary } from '../utils/Cloudinary.js';
 import {otpGeneration,VerifyOtp} from '../utils/OtpGeneration.js';
 import { sendOtpEmail } from '../utils/OtpGeneration.js';
-import e from 'express';
+import  {handelText, handelImg} from '../utils/handelGeminai.js';
 
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -218,6 +218,30 @@ const handleUpload = asyncHandler(async (req, res) => {
 
   })
 
+  const handelAi=asyncHandler(async (req,res)=>{
+   const result=await handelText('why is react so much popular small and swift answer');
+    return res.send(new ApiResponse(200,"AI handeled successfully",result));
+  })
+
+  const handelAiImg = asyncHandler(async (req, res) => {
+    try {
+      const rawResult = await handelImg('return the response in json from my api endpoint analysize this image to fill form of ingo like name evloved form attacks type and edefense etcc', 'C:/Users/rajan/Desktop/Backend/Project/realtimeChat/backend/temp/uploads/ninja.png');
+      const cleanedResult = rawResult.replace(/```json\n?|\n```/g, '').trim();
+      let parsedResult;
+      try {
+        parsedResult = JSON.parse(cleanedResult);
+      } catch (e) {
+        parsedResult = cleanedResult; 
+      }
+  
+      return res.send(new ApiResponse(200, "AI handled successfully", parsedResult));
+    } catch (error) {
+      console.error('Error handling AI image:', error);
+      return res.status(500).send(new ApiResponse(500, "Failed to process image", error.message));
+    }
+  });
+  
+
 export {
     registerUser,
     LoginUser,
@@ -225,5 +249,7 @@ export {
     UserProfile,
     handleUpload,
     OtpHandeling,
-    OtpVerification
+    OtpVerification,
+    handelAi,
+    handelAiImg
 };
