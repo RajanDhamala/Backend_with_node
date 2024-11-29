@@ -1,6 +1,7 @@
 import {GoogleGenerativeAI} from '@google/generative-ai';
 import dotenv from 'dotenv';
 import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 
@@ -37,8 +38,26 @@ const handelImg = async (prompt, path) => {
       throw new Error('Failed to process image with AI.');
     }
   };
+
+  const AiJsonResponse=async (usrQuery)=>{
+    const genAI= new GoogleGenerativeAI(process.env.API_KEY);
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+    });
+
+    const prompt = `List a few popular cookie recipes using this JSON schema:
+
+  Recipe = {'recipeName': string}
+  Return: Array<Recipe>`;
+  const result = await model.generateContent(prompt);
+  console.log(result.response.text());
+  return result
+  }
   
 
 export {
     handelText,
-    handelImg};
+    handelImg,
+    AiJsonResponse
+    
+  };
