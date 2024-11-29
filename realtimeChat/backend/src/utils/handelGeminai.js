@@ -1,7 +1,6 @@
-import {GoogleGenerativeAI} from '@google/generative-ai';
+import {GoogleGenerativeAI,SchemaType } from '@google/generative-ai';
 import dotenv from 'dotenv';
 import fs from 'fs';
-import path from 'path';
 
 dotenv.config();
 
@@ -39,21 +38,61 @@ const handelImg = async (prompt, path) => {
     }
   };
 
-  const AiJsonResponse=async (usrQuery)=>{
-    const genAI= new GoogleGenerativeAI(process.env.API_KEY);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
-    });
-
-    const prompt = `List a few popular cookie recipes using this JSON schema:
-
-  Recipe = {'recipeName': string}
-  Return: Array<Recipe>`;
-  const result = await model.generateContent(prompt);
-  console.log(result.response.text());
-  return result
-  }
+  const AiJsonResponse = async () => {
+    const genAI = new GoogleGenerativeAI(process.env.API_KEY);
   
+    // Enhanced schema to include more details about fruits
+    const schema = {
+      description: "List of fruits with their details",
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          fruitName: {
+            type: "string",
+            description: "Name of the fruit",
+            nullable: false,
+          },
+          color: {
+            type: "string",
+            description: "Primary color of the fruit",
+            nullable: false,
+          },
+          taste: {
+            type: "string",
+            description: "Taste profile of the fruit (e.g., sweet, sour)",
+            nullable: true,
+          },
+          isSeasonal: {
+            type: "boolean",
+            description: "Indicates if the fruit is seasonal",
+            nullable: true,
+          },
+        },
+        required: ["fruitName", "color"],
+      },
+    };
+  
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-pro",
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema: schema,
+      },
+    });
+  
+    try {
+      const result = await model.generateContent("List popular fruits with their color, taste, and whether they are seasonal.");
+      const textResponse = await result.response.text();
+      const fruits = JSON.parse(textResponse);
+  
+      console.log("Fruits data:", fruits);
+      return fruits;
+    } catch (error) {
+      console.error("Error generating fruit data:", error);
+    }
+  };
+    
 
 export {
     handelText,
