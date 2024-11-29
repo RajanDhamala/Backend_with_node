@@ -6,7 +6,7 @@ import { generateAccessToken,generateRefreshToken} from '../utils/JWTokenCreate.
 import { uploadFileToCloudinary } from '../utils/Cloudinary.js';
 import {otpGeneration,VerifyOtp} from '../utils/OtpGeneration.js';
 import { sendOtpEmail } from '../utils/OtpGeneration.js';
-import  {handelText, handelImg} from '../utils/handelGeminai.js';
+import  {handelText, handelImg,AiJsonResponse} from '../utils/handelGeminai.js';
 
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -247,6 +247,7 @@ const handleUpload = asyncHandler(async (req, res) => {
     try {
       const rawData = await handelImg(prompt, req.file.path);
       const cleanedData = rawData.replace(/```json\n?|\n```/g, '').trim();
+      console.log(cleanedData.file);
       let parsedResult;
       try {
         parsedResult = JSON.parse(cleanedData);
@@ -262,8 +263,19 @@ const handleUpload = asyncHandler(async (req, res) => {
       return res.status(500).json({ error: "AI image analysis failed." });
     }
   });
-  
 
+  const aifunctionCalling=asyncHandler ( async (req,res)=>{
+    const {usrQuery,city}=req.body;
+
+  })
+
+
+  const gptJsonResponse=asyncHandler(async (req,res)=>{
+    const result=await AiJsonResponse()
+    return res.send(result)
+
+  })
+  
 export {
     registerUser,
     LoginUser,
@@ -274,5 +286,7 @@ export {
     OtpVerification,
     handelAi,
     handelAiImg,
-    aiImgAnalysis
+    aiImgAnalysis,
+    aifunctionCalling,
+    gptJsonResponse
 };
