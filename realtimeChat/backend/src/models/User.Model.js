@@ -41,6 +41,16 @@ const userSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: 'Chat'
         }
+    ],friends:[
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'User'
+        }
+    ], friendRequests:[
+        {
+            from: { type: Schema.Types.ObjectId, ref: 'User' },
+            status: { type: String, enum: ['pending', 'accepted', 'declined'], default: 'pending' }
+        }
     ]
 }, { timestamps: true });
 
