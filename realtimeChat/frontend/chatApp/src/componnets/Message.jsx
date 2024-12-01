@@ -1,105 +1,108 @@
-import React,{useRef} from 'react';
+import React, { useState, useEffect } from 'react';
+import io from 'socket.io-client';
 
-function Message({ profileImage, senderName, timestamp, messageText, status }) {
+const socket = io('http://localhost:4000'); 
 
-    const dropdownDotsRef = useRef(null);
+function ChatApp() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [users, setUsers] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [messageRequests, setMessageRequests] = useState([]);
+
+
+  const searchUsers = async () => {
+    const allUsers = ['john', 'alice', 'bob'];
+    const result = allUsers.filter(user => user.includes(searchTerm));
+    setUsers(result);
+  };
+
+  useEffect(() => {
+    socket.on('message_request_received', (sender) => {
+      setMessageRequests((prev) => [...prev, { sender, status: 'pending' }]);
+    });
+
+    socket.on('message_request_accepted', (user) => {
+      setMessages((prev) => [...prev, { sender: 'System', text: `${user} accepted your message request` }]);
+    });
+
+    socket.on('message_request_rejected', (user) => {
+      setMessages((prev) => [...prev, { sender: 'System', text: `${user} rejected your message request` }]);
+    });
+
+    return () => {
+      socket.off('message_request_received');
+      socket.off('message_request_accepted');
+      socket.off('message_request_rejected');
+    };
+  }, []);
+
+  const sendMessageRequest = (receiver) => {
+    const sender = 'john'; 
+    socket.emit('send_message_request', sender, receiver);
+  };
+
+  const acceptRequest = (sender) => {
+    const receiver = 'john';
+    socket.emit('accept_message_request', sender, receiver);
+  };
+
+  const rejectRequest = (sender) => {
+    const receiver = 'john';
+    socket.emit('reject_message_request', sender, receiver);
+  };
+
   return (
-    <div className="flex items-start gap-2.5">
-      <img
-        className="w-8 h-8 rounded-full"
-        src={profileImage}
-        alt={`${senderName} profile`}
+    <div className="chat-app">
+      <h1>Chat</h1>
+
+     
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        placeholder="Search users"
       />
-      <div className="flex flex-col gap-1 w-full max-w-[320px]">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-semibold text-gray-900 dark:text-white">
-            {senderName}
-          </span>
-          <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-            {timestamp}
-          </span>
-        </div>
-        <div className="flex flex-col leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl dark:bg-gray-700">
-          <p className="text-sm font-normal text-gray-900 dark:text-white">
-            {messageText}
-          </p>
-        </div>
-        <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-          {status}
-        </span>
-      </div>
-      <button onClick={(e) =>{
-        dropdownDotsRef.current.classList.toggle('hidden');
-      } }
-        id="dropdownMenuIconButton"
-        data-dropdown-toggle="dropdownDots"
-        data-dropdown-placement="bottom-start"
-        className="inline-flex self-center items-center p-2 text-sm font-medium text-center text-gray-900 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none dark:text-white focus:ring-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:focus:ring-gray-600"
-        type="button"
-      >
-        <svg
-          className="w-4 h-4 text-gray-500 dark:text-gray-400"
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="currentColor"
-          viewBox="0 0 4 15"
-        >
-          <path d="M3.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 6.041a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.959a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
-        </svg>
-      </button>
-      <div
-      ref={dropdownDotsRef}
-        id="dropdownDots"
-        className="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-40 dark:bg-gray-700 dark:divide-gray-600"
-      >
-        <ul
-          className="py-2 text-sm text-gray-700 dark:text-gray-200"
-          aria-labelledby="dropdownMenuIconButton"
-        >
-          <li>
-            <a
-              href="#"
-              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-            >
-              Reply
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-            >
-              Forward
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-            >
-              Copy
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-            >
-              Report
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-            >
-              Delete
-            </a>
-          </li>
+      <button onClick={searchUsers}>Search</button>
+
+      <div>
+        <h2>Search Results</h2>
+        <ul>
+          {users.map((user, index) => (
+            <li key={index}>
+              {user}
+              <button onClick={() => sendMessageRequest(user)}>Send Request</button>
+            </li>
+          ))}
         </ul>
+      </div>
+
+      <div>
+        <h2>Message Requests</h2>
+        <ul>
+          {messageRequests.map((request, index) => (
+            <li key={index}>
+              {request.sender}
+              {request.status === 'pending' && (
+                <>
+                  <button onClick={() => acceptRequest(request.sender)}>Accept</button>
+                  <button onClick={() => rejectRequest(request.sender)}>Reject</button>
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <h2>Messages</h2>
+        {messages.map((msg, index) => (
+          <div key={index}>
+            <strong>{msg.sender}</strong>: {msg.text}
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-export default Message;
+export default ChatApp;

@@ -6,97 +6,97 @@ const socket = io('http://localhost:8000');
 function ChatApp() {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
-  const [room, setRoom] = useState('');
-  const [roomCreated, setRoomCreated] = useState(''); // Store the created room ID
+  const [username, setUsername] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingNotification, setTypingNotification] = useState('');
+  const [isSeen, setIsSeen] = useState(false);
 
- 
-  const createRoom = () => {
-    socket.emit('create-room');
-  };
-
- 
   const joinRoom = () => {
-    if (room.trim()) {
-      socket.emit('join_room', room);
+    if (username.trim()) {
+      socket.emit('join_room', username);
     }
   };
 
-  
   const sendMessage = () => {
-    if (message.trim() && room.trim()) {
-      socket.emit('send_message', { room, message });
+    if (message.trim() && username.trim()) {
+      socket.emit('send_message', { username, message });
       setMessage('');
+      setIsTyping(false);
     }
+  };
+
+  const handleTyping = (e) => {
+    setMessage(e.target.value);
+
+    if (!isTyping) {
+      setIsTyping(true);
+      socket.emit('typing', { username, isTyping: true });
+    }
+
+    setTimeout(() => {
+      setIsTyping(false);
+      socket.emit('typing', { username, isTyping: false });
+    }, 2000);
+  };
+
+  const handleMessageSeen = (messageId) => {
+    socket.emit('message-seen', { messageId, username });
+    setIsSeen(true);
   };
 
   useEffect(() => {
-   
-    socket.on('room-created', (roomId) => {
-      setRoomCreated(roomId);
-      alert(`Room created with ID: ${roomId}`);
-     
-      socket.emit('join_room', roomId);
-      setRoom(roomId); 
+    socket.on('room-joined', (username) => {
+      alert(`You joined chat with: ${username}`);
     });
 
-   
-    socket.on('room-joined', (room) => {
-      alert(`You joined room: ${room}`);
-    });
-
-   
     socket.on('receive_message', (data) => {
       setMessages((prev) => [...prev, data]);
     });
 
-    
-    socket.on('error', (data) => {
-      alert(data.message);
+    socket.on('user_typing', ({ sender, isTyping }) => {
+      if (isTyping) {
+        setTypingNotification('User is typing...');
+      } else {
+        setTypingNotification('');
+      }
+    });
+
+    socket.on('message-seen', (data) => {
+      // You can update the message to show it has been seen by the user
+      const updatedMessages = messages.map((msg) =>
+        msg.id === data.messageId ? { ...msg, seenBy: data.seenBy } : msg
+      );
+      setMessages(updatedMessages);
     });
 
     return () => {
-      socket.off('room-created');
       socket.off('room-joined');
       socket.off('receive_message');
-      socket.off('error');
+      socket.off('user_typing');
+      socket.off('message-seen');
     };
-  }, []);
+  }, [messages]);
 
   return (
     <div className="px-5 py-4 max-w-xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Chat Application</h1>
 
-      {/* Create or Join Room Section */}
       <div className="flex gap-2 mb-4">
-        <button
-          className="rounded-md bg-green-500 text-white hover:bg-green-600 px-4 py-2"
-          onClick={createRoom}
-        >
-          Create Room
-        </button>
         <input
           type="text"
           className="flex-grow focus:outline-none border-2 px-4 py-2 rounded-md bg-gray-200"
-          placeholder="Enter room ID to join"
-          value={room}
-          onChange={(e) => setRoom(e.target.value)}
+          placeholder="Enter username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
         />
         <button
           className="rounded-md bg-blue-500 text-white hover:bg-blue-600 px-4 py-2"
           onClick={joinRoom}
         >
-          Join Room
+          Join Chat
         </button>
       </div>
 
-      {/* Show created room ID */}
-      {roomCreated && (
-        <div className="bg-green-200 text-green-800 p-2 rounded-md mb-4">
-          <strong>Room Created:</strong> {roomCreated}
-        </div>
-      )}
-
-      {/* Messages List */}
       <div className="border rounded-lg p-4 h-80 overflow-y-auto bg-gray-50 flex flex-col">
         {messages.map((msg, index) => (
           <div
@@ -107,18 +107,36 @@ function ChatApp() {
             style={{ maxWidth: '70%' }}
           >
             {msg.message}
+            <div className="text-xs text-gray-500">
+              {msg.seenBy ? `Seen by: ${msg.seenBy.join(', ')}` : 'Not seen yet'}
+            </div>
+            {/* Add a button to mark as seen */}
+            {msg.sender !== socket.id && (
+              <button
+                className="text-xs text-blue-500 mt-1"
+                onClick={() => handleMessageSeen(msg.id)}
+              >
+                Mark as Seen
+              </button>
+            )}
           </div>
         ))}
       </div>
 
-      {/* Message Input */}
+      {/* Typing Notification */}
+      {typingNotification && (
+        <div className="text-gray-500 mt-2">
+          <em>{typingNotification}</em>
+        </div>
+      )}
+
       <div className="flex gap-2 mt-4">
         <input
           type="text"
           className="flex-grow focus:outline-none border-2 px-4 py-2 rounded-md bg-gray-200"
           placeholder="Enter message"
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={handleTyping}
         />
         <button
           className="rounded-md bg-blue-500 text-white hover:bg-blue-600 px-4 py-2"
