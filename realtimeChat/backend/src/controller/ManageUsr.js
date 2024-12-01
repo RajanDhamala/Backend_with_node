@@ -219,7 +219,9 @@ const handleUpload = asyncHandler(async (req, res) => {
   })
 
   const handelAi=asyncHandler(async (req,res)=>{
-   const result=await handelText('why is react so much popular small and swift answer');
+   const result=await handelText('im 1300 elo in chess.com').then((res)=>{
+    console.log(res);
+   });
     return res.send(new ApiResponse(200,"AI handeled successfully",result));
   })
 
@@ -271,8 +273,11 @@ const handleUpload = asyncHandler(async (req, res) => {
 
 
   const gptJsonResponse=asyncHandler(async (req,res)=>{
-    const result=await AiJsonResponse()
-    return res.send(result)
+    setTimeout(async() => {
+      const result=await AiJsonResponse()
+      return res.send(result)
+    }, 2000);
+  
 
   })
   

@@ -4,15 +4,40 @@ import fs from 'fs';
 
 dotenv.config();
 
-const handelText=async(prompt)=>{
-    const genAI = new GoogleGenerativeAI(process.env.Api_Key);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const prompt2 = prompt;
-    
-    const result = await model.generateContent(prompt2);
-    console.log(result.response.text());
-    return result.response.text();
-}
+const handelText = async (prompt) => {
+  const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+  try {
+    const chat = model.startChat({
+      history: [
+        {
+          role: "user",
+          parts: [{ text: "Hello" }],
+        },
+        {
+          role: "model",
+          parts: [{ text: "Great to meet you. What would you like to know?" }],
+        },
+      ],
+    });
+
+    const result = await chat.sendMessageStream(prompt);
+
+    let finalResponse = "";
+    for await (const chunk of result.stream) {
+      const chunkText = chunk.text(); 
+      process.stdout.write(chunkText); 
+      finalResponse += chunkText; 
+    }
+
+    return finalResponse; 
+  } catch (error) {
+    console.error("Error handling text:", error);
+    throw error;
+  }
+};
+
 
 const handelImg = async (prompt, path) => {
     const genAI = new GoogleGenerativeAI(process.env.API_KEY);
@@ -98,5 +123,4 @@ export {
     handelText,
     handelImg,
     AiJsonResponse
-    
   };
