@@ -29,5 +29,5 @@ connectDb().then(() => {
 });
 
 app.get("/", (req, res) => {
-  res.send("Hello World");
+  res.send("hello world");
 });

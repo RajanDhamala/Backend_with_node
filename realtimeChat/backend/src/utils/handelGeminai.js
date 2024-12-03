@@ -54,7 +54,7 @@ const handelImg = async (prompt, path) => {
     const imagePart = fileToGenerativePart(path, 'image/jpeg');
   
     try {
-      const result = await model.generateContent([prompt, imagePart,'can u generate the api response for it like what ever user ask send it as the api repsonse with keys ok if array good so we can loop throuugh it send the reponse as arry ok so we can easily loop through it and send it as the response to the user and make it shout max 3 lines ok send ai response as the object with keys and value keys should be like question and then value should have answer make just one question and answer all in there ']);
+      const result = await model.generateContent([prompt, imagePart,'  ']);
       console.log(result.response.text());
       return result.response.text(); 
     } catch (error) {
