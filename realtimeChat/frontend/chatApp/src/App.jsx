@@ -7,6 +7,7 @@ import axios from 'axios';
 import OtpComponent from './componnets/OtpComponent';
 import ChatApp from './componnets/ChatApp';
 import AiAnalysis from './Shocket/AiAnalysis'
+import SendFriendRequest from './componnets/SendFriendRequest';
 
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
           <Link to={'/Otp'} className='text-blue-500 hover:underline'>Otp</Link>
           <Link to={'/ChatApp'} className='text-blue-500 hover:underline'>ChatShocket</Link>
           <Link to={'/aiAnalysis'} className='text-blue-500 hover:underline'>Ai Analysis</Link>
+          <Link to={'/Sendrequest'} className='text-blue-500 hover:underline'>Send Req</Link>
          
           <button onClick={(e)=>LogoutUser()} className='bg-red-500 text-white rounded-md px-2 hover:bg-red-600 hover:scale-105'>Logout</button>
           
@@ -45,6 +47,7 @@ function App() {
           <Route path='/UserProfile' element={<UserProfile/>}></Route>
           <Route path='/Otp' element={<OtpComponent/>}></Route>
           <Route path='/ChatApp' element={<ChatApp/>}></Route>
+          <Route path='/Sendrequest' element={<SendFriendRequest/>}></Route>
           <Route path='/aiAnalysis' element={<AiAnalysis/>}></Route>
       
         </Routes>

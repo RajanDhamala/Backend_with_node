@@ -3,7 +3,7 @@ import axios from "axios";
 
 const OtpComponent = () => {
   const [otp, setOtp] = useState("");
-  const [step, setStep] = useState(1); // Step 1: Request OTP, Step 2: Verify OTP
+  const [step, setStep] = useState(1); 
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -11,10 +11,10 @@ const OtpComponent = () => {
     setLoading(true);
     try {
       const response = await axios.get("http://localhost:8000/api/OtpRequest", {
-        withCredentials: true, // Includes cookies in the request
+        withCredentials: true, 
       });
       setMessage(response.data.message || "OTP sent to your email.");
-      setStep(2); // Move to the OTP verification step
+      setStep(2); 
     } catch (error) {
       setMessage(error.response?.data?.message || "Error requesting OTP.");
     } finally {
@@ -29,11 +29,11 @@ const OtpComponent = () => {
         "http://localhost:8000/api/OtpVerification",
         { otp },
         {
-          withCredentials: true, // Includes cookies in the request
+          withCredentials: true, 
         }
       );
       setMessage(response.data.message || "OTP verified successfully.");
-      setStep(1); // Optionally reset to step 1
+      setStep(1); 
     } catch (error) {
       setMessage(error.response?.data?.message || "Error verifying OTP.");
     } finally {

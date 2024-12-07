@@ -1,13 +1,13 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiResponse} from "../utils/ApiResponse.js"
-import User from '../models/User.js';
-import Chat from '../models/Group.Model.j'
-
+import User from '../models/User.Model.js';
 
 const SendFriendRequest = asyncHandler(async (req, res) => {
 
-    const { senderName, receiverName } = req.body;
-    const requestedTo=await User.findbyId(receiverName);
+    const senderName=req.user.username;
+    const receiverName=req.body.receiverName;
+
+    const requestedTo=await User.findOne({username:receiverName});
 
     if (!requestedTo) {
         res.status(404);
@@ -25,7 +25,7 @@ const SendFriendRequest = asyncHandler(async (req, res) => {
     requestedTo.friendRequests.push(friendRequest);
     requestedTo.save();
 
-    res.json({ message: 'Friend Request Sent' });
+    res.json(new ApiResponse(200, 'Friend request sent successfully', requestedTo.friendRequests));
 });
 
 const AcceptFriendRequest = asyncHandler(async (req, res) => {
@@ -35,7 +35,4 @@ const AcceptFriendRequest = asyncHandler(async (req, res) => {
 
 export { 
     SendFriendRequest,
-    AcceptFriendRequest
-
-
  };

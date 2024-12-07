@@ -10,39 +10,49 @@ import  {handelText, handelImg,AiJsonResponse} from '../utils/handelGeminai.js';
 
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { username, email, password,birthDate } = req.body;
-    console.log(username, email, password,birthDate);
+  const { username, email, password, birthDate } = req.body;
+  console.log("Request Body:", req.body);
 
-    if (!username || !email || !password ||!birthDate) {
-        res.json(new ApiResponse(400, "Please provide all the fields", null));
-        throw new Error("Please provide all the fields");
-    }
+  if (!username || !email || !password || !birthDate) {
+      console.log("Missing fields");
+      return res.json(new ApiResponse(400, "Please provide all the fields", null));
+  }
 
-    const existingUser = await User.findOne({ email });
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+      console.log("User already exists");
+      return res.json(new ApiResponse(400, "User already exists", null));
+  }
 
-    if (existingUser) {
-        return res.json(new ApiResponse(400, "User already exists", null));
-    }
-    const hashedPassword= await bcrypt.hash(password,10);
-    
-    try {
-        const newUser = new User({
-            username,
-            email,
-            password:hashedPassword,
-            birthDate
-        });
-        const savedUsr = await newUser.save();
-        if (savedUsr) {
-            return res.json(new ApiResponse(200, "User registered successfully", savedUsr));
-        } else {
-            return res.json(new ApiResponse(400, "Failed to register user", null));
-        }
-    } catch (error) {
-        console.error("Error during user registration:", error);
-        return res.status(500).json(new ApiResponse(500, "Server Error", null));
-    }
+  let hashedPassword;
+  try {
+      hashedPassword = await bcrypt.hash(password, 10);
+  } catch (error) {
+      console.error("Error hashing password:", error);
+      return res.status(500).json(new ApiResponse(500, "Password hashing failed", null));
+  }
+
+  try {
+      const newUser = new User({
+          username,
+          email,
+          password: hashedPassword,
+          birthDate,
+      });
+      const savedUsr = await newUser.save();
+      console.log("Saved User:", savedUsr);
+
+      if (savedUsr) {
+          return res.json(new ApiResponse(200, "User registered successfully", savedUsr));
+      } else {
+          return res.json(new ApiResponse(400, "Failed to register user", null));
+      }
+  } catch (error) {
+      console.error("Error during user registration:", error);
+      return res.status(500).json(new ApiResponse(500, "Server Error", null));
+  }
 });
+
 
 const LoginUser=asyncHandler ( async (req,res)=>{
     const {email,password}=req.body;

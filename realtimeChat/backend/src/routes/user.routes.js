@@ -4,6 +4,7 @@ import {registerUser,LoginUser,LogoutUser,UserProfile,handleUpload,OtpHandeling,
 OtpVerification,handelAi,handelAiImg,aiImgAnalysis,gptJsonResponse} from '../controller/ManageUsr.js';
 import upload from '../middleware/MulterFileUpload.js';
 import ImageAnalysis from '../middleware/MulterImgAnalysis.js'
+import {SendFriendRequest} from '../controller/ChatController.js'
 
 
 const route=express.Router();
@@ -23,6 +24,8 @@ route.get('/aiImg',handelAiImg)
 
 route.post('/aiImg',ImageAnalysis.single('imgToAnalysis'),aiImgAnalysis)
 route.get('/json',gptJsonResponse)
+
+route.post('/sendRequest',JwtAuthenticate,SendFriendRequest)
 
 
 export default route

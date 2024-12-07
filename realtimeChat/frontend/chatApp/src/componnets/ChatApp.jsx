@@ -62,7 +62,6 @@ function ChatApp() {
     });
 
     socket.on('message-seen', (data) => {
-      // You can update the message to show it has been seen by the user
       const updatedMessages = messages.map((msg) =>
         msg.id === data.messageId ? { ...msg, seenBy: data.seenBy } : msg
       );
@@ -110,7 +109,6 @@ function ChatApp() {
             <div className="text-xs text-gray-500">
               {msg.seenBy ? `Seen by: ${msg.seenBy.join(', ')}` : 'Not seen yet'}
             </div>
-            {/* Add a button to mark as seen */}
             {msg.sender !== socket.id && (
               <button
                 className="text-xs text-blue-500 mt-1"
@@ -123,7 +121,6 @@ function ChatApp() {
         ))}
       </div>
 
-      {/* Typing Notification */}
       {typingNotification && (
         <div className="text-gray-500 mt-2">
           <em>{typingNotification}</em>

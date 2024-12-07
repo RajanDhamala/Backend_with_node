@@ -54,6 +54,6 @@ const oneToOneChatSchema = new Schema({
     ]
 });
 
-const Chat = mongoose.model('Chat', oneToOneChatSchema);
+const Chat = mongoose.model('ChatMessages', oneToOneChatSchema);
 
 export default Chat;
