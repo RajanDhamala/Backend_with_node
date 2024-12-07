@@ -1,10 +1,11 @@
 import express from 'express';
 import {JwtAuthenticate} from '../middleware/JwtAuthencate.js';
 import {registerUser,LoginUser,LogoutUser,UserProfile,handleUpload,OtpHandeling,
-OtpVerification,handelAi,handelAiImg,aiImgAnalysis,gptJsonResponse} from '../controller/ManageUsr.js';
+OtpVerification,handelAi,handelAiImg,aiImgAnalysis,gptJsonResponse,getAllUsers} from '../controller/ManageUsr.js';
 import upload from '../middleware/MulterFileUpload.js';
 import ImageAnalysis from '../middleware/MulterImgAnalysis.js'
 import {SendFriendRequest} from '../controller/ChatController.js'
+
 
 
 const route=express.Router();
@@ -26,6 +27,8 @@ route.post('/aiImg',ImageAnalysis.single('imgToAnalysis'),aiImgAnalysis)
 route.get('/json',gptJsonResponse)
 
 route.post('/sendRequest',JwtAuthenticate,SendFriendRequest)
+
+route.get('/getAllUsers',JwtAuthenticate,getAllUsers)
 
 
 export default route

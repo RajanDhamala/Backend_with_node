@@ -287,8 +287,11 @@ const handleUpload = asyncHandler(async (req, res) => {
       const result=await AiJsonResponse()
       return res.send(result)
     }, 2000);
-  
+  })
 
+  const getAllUsers=asyncHandler (async (req,res)=>{
+    const users = await User.find({}).select('username profilePic -_id');
+    return res.json(new ApiResponse(200,"All Users",users));
   })
   
 export {
@@ -303,5 +306,6 @@ export {
     handelAiImg,
     aiImgAnalysis,
     aifunctionCalling,
-    gptJsonResponse
+    gptJsonResponse,
+    getAllUsers
 };
