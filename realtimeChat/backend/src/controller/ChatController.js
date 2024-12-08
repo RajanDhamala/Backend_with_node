@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiResponse} from "../utils/ApiResponse.js"
 import User from '../models/User.Model.js';
 
-const SendFriendRequest = asyncHandler(async (req, res) => {
+const SendMessageRequest = asyncHandler(async (req, res) => {
 
     const senderName=req.user.username;
     const receiverName=req.body.receiverName;
@@ -34,5 +34,5 @@ const AcceptFriendRequest = asyncHandler(async (req, res) => {
 })
 
 export { 
-    SendFriendRequest,
+    SendMessageRequest,
  };

@@ -47,6 +47,11 @@ const SearchUser = () => {
     fetchSearchResults(query);
   };
 
+  const handleImageError = (e) => {
+    e.target.src = "/default-avatar.png";
+    e.target.onerror = null;
+  };
+
   return (
     <div className="w-full max-w-md mx-auto mt-10">
       <input
@@ -65,13 +70,14 @@ const SearchUser = () => {
           searchResults.map((user, index) => (
             <li
               key={index}
-              className="p-2 border-b border-gray-100 last:border-none hover:bg-gray-50 transition"
+              className="p-2 border-b border-gray-100 last:border-none cursor-pointer transition hover:bg-gray-300"
             >
               <div className="flex items-center space-x-4">
                 <img
-                  src={user.profilePicture || "/default-avatar.png"}
+                  src={user.profilePic || "/default-avatar.png"}
                   alt={`${user.username}'s profile`}
-                  className="w-8 h-8 rounded-full"
+                  className="w-10 h-10 rounded-full object-cover"
+                  onError={handleImageError}
                 />
                 <span>{user.username}</span>
               </div>

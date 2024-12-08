@@ -4,7 +4,7 @@ import {registerUser,LoginUser,LogoutUser,UserProfile,handleUpload,OtpHandeling,
 OtpVerification,handelAi,handelAiImg,aiImgAnalysis,gptJsonResponse,getAllUsers,searchUser,uploadProfilePic} from '../controller/ManageUsr.js';
 import upload from '../middleware/MulterFileUpload.js';
 import ImageAnalysis from '../middleware/MulterImgAnalysis.js'
-import {SendFriendRequest} from '../controller/ChatController.js'
+import {SendMessageRequest} from '../controller/ChatController.js'
 import UploadPfp from '../middleware/MulterpfpUpload.js'
 
 const route=express.Router();
@@ -25,7 +25,7 @@ route.get('/aiImg',handelAiImg)
 route.post('/aiImg',ImageAnalysis.single('imgToAnalysis'),aiImgAnalysis)
 route.get('/json',gptJsonResponse)
 
-route.post('/sendRequest',JwtAuthenticate,SendFriendRequest)
+route.post('/sendRequest',JwtAuthenticate,SendMessageRequest)
 
 route.get('/getAllUsers',JwtAuthenticate,getAllUsers)
 route.post('/searchUser',JwtAuthenticate,searchUser)

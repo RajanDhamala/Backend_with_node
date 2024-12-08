@@ -295,7 +295,7 @@ const handleUpload = asyncHandler(async (req, res) => {
     ? { username: { $regex: search, $options: "i" } } 
     : {};
 
-  const users = await User.find(filter).select("username profilePicture -_id");
+  const users = await User.find(filter).select("username profilePic -_id");
   return res.json(new ApiResponse(200, "Filtered Users", users));
 });
 
@@ -304,19 +304,18 @@ const handleUpload = asyncHandler(async (req, res) => {
     if(!req.file){
       console.log("Please provide an image");
       return res.json(new ApiResponse(400,"Please provide an image",null));
-      
       }
 
-    console.log("procedure started")
     const img=req.file
     const username=req.user.username;
 
-    console.log("Request Body:",req.file,img);
-
+    console.log(req.user)
     if(!img){
         return res.json(new ApiResponse(400,"Please provide an image",null));
     }
     const existingUser=await User.findOne({username});
+
+    console.log("Existing user:",existingUser);
 
     if(!existingUser){
         return res.json(new ApiResponse(400,"User not found",null));
@@ -326,7 +325,6 @@ const handleUpload = asyncHandler(async (req, res) => {
       existingUser.profilePic = fileUrl;
       console.log("Existing user after update:", existingUser); 
       await existingUser.save();
-
       return res.json(new ApiResponse(200, "Profile picture uploaded successfully", fileUrl));
   } catch (err) {
       console.log(err, "Error in uploading profile pic");
@@ -334,7 +332,6 @@ const handleUpload = asyncHandler(async (req, res) => {
   }
 });
 
-  
 export {
     registerUser,
     LoginUser,
