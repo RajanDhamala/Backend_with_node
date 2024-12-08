@@ -131,8 +131,6 @@ const UserProfile=asyncHandler(async (req,res)=>{
     console.log("User email:",userEmail);
     const user=await User.findOne({email:userEmail});
 
-    console.log("User:",user);
-
     if(!user){
         return res.json(new ApiResponse(400,"User not found",null));
     }
@@ -169,16 +167,12 @@ const handleUpload = asyncHandler(async (req, res) => {
   
     try {
       const fileUrl = await uploadFileToCloudinary(req.file.path, folderName, fileName);  
-  
-   
-  
       const existingUser = await User.findOne({ email: req.user.email });
   
       if (isProfilePicture === 'true') {
         existingUser.profilePic = fileUrl; 
         await existingUser.save();
       }
-  
       res.status(200).json({ message: 'File uploaded successfully', url: fileUrl });
     } catch (error) {
       console.error(error);
@@ -305,6 +299,41 @@ const handleUpload = asyncHandler(async (req, res) => {
   return res.json(new ApiResponse(200, "Filtered Users", users));
 });
 
+  const uploadProfilePic=asyncHandler(async (req,res)=>{
+
+    if(!req.file){
+      console.log("Please provide an image");
+      return res.json(new ApiResponse(400,"Please provide an image",null));
+      
+      }
+
+    console.log("procedure started")
+    const img=req.file
+    const username=req.user.username;
+
+    console.log("Request Body:",req.file,img);
+
+    if(!img){
+        return res.json(new ApiResponse(400,"Please provide an image",null));
+    }
+    const existingUser=await User.findOne({username});
+
+    if(!existingUser){
+        return res.json(new ApiResponse(400,"User not found",null));
+    }
+    try {
+      const fileUrl = await uploadFileToCloudinary(img.path, "Profile_pictures", username);
+      existingUser.profilePic = fileUrl;
+      console.log("Existing user after update:", existingUser); 
+      await existingUser.save();
+
+      return res.json(new ApiResponse(200, "Profile picture uploaded successfully", fileUrl));
+  } catch (err) {
+      console.log(err, "Error in uploading profile pic");
+      return res.json(new ApiResponse(500, "Server Error", null));
+  }
+});
+
   
 export {
     registerUser,
@@ -320,5 +349,6 @@ export {
     aifunctionCalling,
     gptJsonResponse,
     getAllUsers,
-    searchUser
+    searchUser,
+    uploadProfilePic
 };

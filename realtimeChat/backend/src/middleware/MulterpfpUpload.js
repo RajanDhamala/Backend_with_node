@@ -3,15 +3,16 @@ import path from "path";
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, './temp/analysis');
+      cb(null, './temp/profileimg')
     },
+
     filename: function (req, file, cb) {
         const ext = path.extname(file.originalname); 
-        const fileName = file.originalname.slice(0, 15); 
+        const fileName = file.originalname.slice(0, 12); 
         cb(null, fileName + ext); 
     }
   })
   
-  const ImageAnalysis = multer({ storage: storage })
+  const UploadPfp = multer({ storage: storage })
 
-  export default ImageAnalysis;
+  export default UploadPfp;

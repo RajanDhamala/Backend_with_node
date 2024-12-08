@@ -1,6 +1,7 @@
 import cloudinary from 'cloudinary';
 import dotenv from 'dotenv';
 
+
 dotenv.config();
 
 cloudinary.v2.config({
@@ -16,7 +17,6 @@ export const uploadFileToCloudinary = async (filePath, folder, fileName) => {
       resource_type: 'auto', 
       public_id: fileName,
     });
-
     return result.secure_url;
   } catch (error) {
     console.error('Cloudinary upload error:', error);
