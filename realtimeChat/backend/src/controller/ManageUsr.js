@@ -293,6 +293,18 @@ const handleUpload = asyncHandler(async (req, res) => {
     const users = await User.find({}).select('username profilePic -_id');
     return res.json(new ApiResponse(200,"All Users",users));
   })
+
+  const searchUser=asyncHandler(async (req,res)=>{
+    const {search}=req.body;
+    const searchedBy=req.user.username
+    const filter = search
+    ? { username: { $regex: search, $options: "i" } } 
+    : {};
+
+  const users = await User.find(filter).select("username profilePicture -_id");
+  return res.json(new ApiResponse(200, "Filtered Users", users));
+});
+
   
 export {
     registerUser,
@@ -307,5 +319,6 @@ export {
     aiImgAnalysis,
     aifunctionCalling,
     gptJsonResponse,
-    getAllUsers
+    getAllUsers,
+    searchUser
 };

@@ -8,6 +8,7 @@ import OtpComponent from './componnets/OtpComponent';
 import ChatApp from './componnets/ChatApp';
 import AiAnalysis from './Shocket/AiAnalysis'
 import SendFriendRequest from './componnets/SendFriendRequest';
+import SearchUser from './componnets/SearchUser';
 
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
           <Link to={'/ChatApp'} className='text-blue-500 hover:underline'>ChatShocket</Link>
           <Link to={'/aiAnalysis'} className='text-blue-500 hover:underline'>Ai Analysis</Link>
           <Link to={'/Sendrequest'} className='text-blue-500 hover:underline'>Send Req</Link>
+          <Link to={'/searchUser'} className='text-blue-500 hover:underline'>Get usrs</Link>
          
           <button onClick={(e)=>LogoutUser()} className='bg-red-500 text-white rounded-md px-2 hover:bg-red-600 hover:scale-105'>Logout</button>
           
@@ -49,6 +51,7 @@ function App() {
           <Route path='/ChatApp' element={<ChatApp/>}></Route>
           <Route path='/Sendrequest' element={<SendFriendRequest/>}></Route>
           <Route path='/aiAnalysis' element={<AiAnalysis/>}></Route>
+          <Route path='/searchUser' element={<SearchUser/>}></Route>
       
         </Routes>
       </BrowserRouter>
