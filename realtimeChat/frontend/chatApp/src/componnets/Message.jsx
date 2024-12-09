@@ -9,11 +9,10 @@ function ChatApp() {
   const [messageRequests, setMessageRequests] = useState([]);
 
   useEffect(() => {
-    // Initialize socket connection
+
     const newSocket = io("http://localhost:8000");
     setSocket(newSocket);
 
-    // Event listeners
     newSocket.on('message_request_received', (sender) => {
       setMessageRequests((prev) => [...prev, { sender, status: 'pending' }]);
     });
@@ -34,7 +33,6 @@ function ChatApp() {
       console.log("Disconnected from server:", reason);
     });
 
-    // Cleanup on unmount
     return () => {
       newSocket.disconnect();
     };

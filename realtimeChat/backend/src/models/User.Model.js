@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { Schema } from "mongoose";
+import { time } from "speakeasy";
 
 const userSchema = new Schema({
     username: {
@@ -44,12 +45,13 @@ const userSchema = new Schema({
     ],friends:[
         {
             type: Schema.Types.ObjectId,
-            ref: 'User'
+            ref: 'Users',
+            username: { type: String, required: true }
         }
-    ], friendRequests:[
+    ],friendRequests:[
         {
-            from: { type: Schema.Types.ObjectId, ref: 'User' },
-            status: { type: String, enum: ['pending', 'accepted', 'declined'], default: 'pending' }
+            from: { type: Schema.Types.ObjectId, ref: 'Users' },
+            timestamp: { type: Date, default: Date.now }
         }
     ]
 }, { timestamps: true });

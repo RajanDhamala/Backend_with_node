@@ -23,7 +23,7 @@ function App() {
   return (
     <>
       <BrowserRouter>
-        <div className="flex space-x-4 p-4 bg-gray-200 justify-center text-lg">
+        <div className="flex space-x-4 p-4 bg-gray-200 justify-center text-lg flex-wrap">
           <Link to="/login" className="text-blue-500 hover:underline">
             Login
           </Link>

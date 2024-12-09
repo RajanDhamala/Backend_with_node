@@ -69,8 +69,15 @@ const SearchUser = () => {
     }
   };
 
-  const handleSendMessageRequest = () => {
-    console.log("Sending message request...");
+  const handleSendMessageRequest = (receiverName) => {
+    alert(receiverName);
+    try{
+      axios.post(`http://localhost:8000/api/sendRequest`, {receiverName}, {withCredentials: true}).then((response)=>{
+        console.log(response.data);
+      })
+    }catch(error){
+      console.log(error);
+    }
   };
 
   return (
@@ -92,7 +99,7 @@ const SearchUser = () => {
             <li
               key={index}
               className="p-2 border-b border-gray-100 last:border-none cursor-pointer transition hover:bg-gray-300"
-              onClick={() => handleProfileClick(user.username)}  // Handle click on div
+              onClick={() => handleProfileClick(user.username)}  
             >
               <div className="flex items-center space-x-4">
                 <img
@@ -133,7 +140,7 @@ const SearchUser = () => {
     
           <div className="mt-4 flex justify-center">
             <button
-              onClick={handleSendMessageRequest}
+              onClick={(e)=>handleSendMessageRequest(userProfile.username)}
               className="py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
             >
               Send Message Request

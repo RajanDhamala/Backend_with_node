@@ -339,22 +339,22 @@ const getUserProfile=asyncHandler (async (req,res)=>{
   const user=await User.findOne({username}).select("username profilePic verifiedUser email birthDate activeChats friends -_id");
 
   if(searchedby===username){
-    return res.send("thats ur own profile blud")
+    return res.send(new ApiResponse(200,"thats ur own profile",))
   }
 
   if(!user){
       return res.json(new ApiResponse(400,"User not found",null));
   }
   console.log("User found:",user);
-  return res.json(new ApiResponse(200,"User found",{
-    username:user.username,
-    profilePic:user.profilePic,
-    verifiedUser:user.verifiedUser,
-    email:user.email,
-    birthDate:user.birthDate,
-    activeChats:user.activeChats.length,
-    friends:user.friends.length
-  }));
+  return res.json(new ApiResponse(200, "User found", {
+    username: user.username,
+    profilePic: user.profilePic,
+    verifiedUser: user.verifiedUser,
+    email: user.email ? user.email.substring(0, 3) + "****@" + user.email.split("@")[1] : null,
+    birthDate: user.birthDate,
+    activeChats: user.activeChats ? user.activeChats.length : 0,
+    friends: user.friends ? user.friends.length : 0
+  }));  
 })
 
 export {

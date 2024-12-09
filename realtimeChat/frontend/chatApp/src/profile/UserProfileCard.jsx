@@ -1,10 +1,38 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { set } from "lodash";
+import { use } from "react";
 
 function UserProfile() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [toggleVisReq, settoggleVisReq] = useState(false);
+  const [friendRequests, setFriendRequests] = useState([]);
+const [message,setMessage]=useState('');
+
+
+  const handelAcceptReject=(username,action)=>{
+    axios.post(`http://localhost:8000/api/friendRequest/${action}/${username}`
+    ,{withCredentials:true}).
+    then((response)=>{
+      console.log(response.data);
+    }).catch((err)=>{
+      console.log(err);
+    })
+  }
+
+  const callRequestApi=()=>{
+    axios.get("http://localhost:8000/api/requestList", { withCredentials: true })
+    .then((response)=>{
+      const data=(response.data.data.friendRequests);
+      setFriendRequests(data)
+      console.log(data);
+      settoggleVisReq(true);
+    }).catch((err)=>{
+      console.log(err,"while fething requests");
+    })
+  }
 
   useEffect(() => {
     axios
@@ -18,7 +46,7 @@ function UserProfile() {
         setError(true);
         setLoading(false);
       });
-  }, []);
+  },['']);
 
   if (loading)
     return (
@@ -50,15 +78,15 @@ function UserProfile() {
           <div className="grid grid-cols-3 text-center order-last md:order-first mt-3 md:mt-0">
             <div>
               <p className="font-bold text-gray-700 text-xl">{userData?.friends || 0}</p>
-              <p className="text-gray-400">Friends</p>
+              <p className="text-gray-400 cursor-pointer hover:scale-105 ">Friends</p>
             </div>
             <div>
               <p className="font-bold text-gray-700 text-xl">{userData?.friendRequests || 0}</p>
-              <p className="text-gray-400">Message Requests</p>
+              <p onClick={(e)=>callRequestApi(e)} className="text-gray-400 cursor-pointer hover:scale-105 ">Message Requests</p>
             </div>
             <div>
               <p className="font-bold text-gray-700 text-xl">{userData?.activeChats}</p>
-              <p className="text-gray-400">Active chats</p>
+              <p className="text-gray-400 cursor-pointer hover:scale-105 ">Active chats</p>
             </div>
           </div>
           <div className="relative">
@@ -77,6 +105,50 @@ function UserProfile() {
             <button className="text-white py-2 px-4 uppercase rounded bg-gray-700 hover:bg-gray-800 shadow hover:shadow-lg font-medium transition transform hover:-translate-y-0.5">
               Messages
             </button>
+
+            {toggleVisReq && (
+  <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-300 p-4 rounded-lg shadow-lg w-full max-w-md md:max-w-lg lg:max-w-xl">
+    <h2 className="text-lg font-bold mb-4 text-center">Friend Requests</h2>
+    <div className="space-y-4 max-h-80 overflow-y-auto">
+      {friendRequests.map((request, index) => (
+        <div
+          key={index}
+          className="flex items-center justify-between p-2 bg-white rounded-lg shadow-sm"
+        >
+          <div className="flex items-center">
+            <img
+              src={request.ProfilePic}
+              alt={request.Username}
+              className="w-12 h-12 rounded-full object-cover"
+            />
+            <p className="ml-3 font-medium">{request.Username}</p>
+          </div>
+          <div className="flex space-x-2">
+            <button
+              className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+              onClick={() =>handelAcceptReject(request.Username,"accept")}
+            >
+              Accept
+            </button>
+            <button
+              className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+              onClick={() => handelAcceptReject(request.Username,"reject")}
+            >
+              Reject
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+    <button
+      className="mt-4 px-4 py-2 w-full bg-gray-700 text-white rounded hover:bg-gray-800"
+      onClick={() => settoggleVisReq(false)}
+    >
+      Close
+    </button>
+  </div>
+)}
+
           </div>
         </div>
         <div className="mt-20 text-center border-b pb-5">
