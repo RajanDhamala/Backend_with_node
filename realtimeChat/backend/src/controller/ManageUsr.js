@@ -128,7 +128,6 @@ const LogoutUser = asyncHandler(async (req, res) => {
 
 const UserProfile=asyncHandler(async (req,res)=>{
     const userEmail=req.user.email;
-    console.log("User email:",userEmail);
     const user=await User.findOne({email:userEmail});
 
     if(!user){
@@ -136,10 +135,11 @@ const UserProfile=asyncHandler(async (req,res)=>{
     }
     const data={
         username:user.username,
-        dob:user.dob,
         email:user.email,
         profilePic:user.profilePic,
-        dob:user.birthDate
+        friends:user.friends.length,
+        activeChats:user.activeChats.length,
+        friendRequests:user.friendRequests.length
     }
     return res.json(new ApiResponse(200,"user found",data))
 })
@@ -332,6 +332,31 @@ const handleUpload = asyncHandler(async (req, res) => {
   }
 });
 
+const getUserProfile=asyncHandler (async (req,res)=>{
+  const {username}=req.params;
+  const searchedby=req.user.username;
+
+  const user=await User.findOne({username}).select("username profilePic verifiedUser email birthDate activeChats friends -_id");
+
+  if(searchedby===username){
+    return res.send("thats ur own profile blud")
+  }
+
+  if(!user){
+      return res.json(new ApiResponse(400,"User not found",null));
+  }
+  console.log("User found:",user);
+  return res.json(new ApiResponse(200,"User found",{
+    username:user.username,
+    profilePic:user.profilePic,
+    verifiedUser:user.verifiedUser,
+    email:user.email,
+    birthDate:user.birthDate,
+    activeChats:user.activeChats.length,
+    friends:user.friends.length
+  }));
+})
+
 export {
     registerUser,
     LoginUser,
@@ -347,5 +372,6 @@ export {
     gptJsonResponse,
     getAllUsers,
     searchUser,
-    uploadProfilePic
+    uploadProfilePic,
+    getUserProfile
 };

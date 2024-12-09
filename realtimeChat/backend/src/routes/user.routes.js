@@ -1,7 +1,7 @@
 import express from 'express';
 import {JwtAuthenticate} from '../middleware/JwtAuthencate.js';
 import {registerUser,LoginUser,LogoutUser,UserProfile,handleUpload,OtpHandeling,
-OtpVerification,handelAi,handelAiImg,aiImgAnalysis,gptJsonResponse,getAllUsers,searchUser,uploadProfilePic} from '../controller/ManageUsr.js';
+OtpVerification,handelAi,handelAiImg,aiImgAnalysis,gptJsonResponse,getAllUsers,searchUser,uploadProfilePic, getUserProfile} from '../controller/ManageUsr.js';
 import upload from '../middleware/MulterFileUpload.js';
 import ImageAnalysis from '../middleware/MulterImgAnalysis.js'
 import {SendMessageRequest} from '../controller/ChatController.js'
@@ -31,5 +31,7 @@ route.get('/getAllUsers',JwtAuthenticate,getAllUsers)
 route.post('/searchUser',JwtAuthenticate,searchUser)
 
 route.post('/setPfp',JwtAuthenticate,UploadPfp.single('ProfilePic'),uploadProfilePic)
+
+route.get('/getProfile/:username',JwtAuthenticate, getUserProfile)
 
 export default route

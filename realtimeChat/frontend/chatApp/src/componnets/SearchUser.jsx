@@ -7,7 +7,7 @@ const SearchUser = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const [userProfile, setUserProfile] = useState(null); 
   const fetchSearchResults = useCallback(
     debounce(async (query) => {
       if (!query) {
@@ -52,6 +52,27 @@ const SearchUser = () => {
     e.target.onerror = null;
   };
 
+  const handleProfileClick = async (username) => {
+    try {
+      const { data } = await axios.get(`http://localhost:8000/api/getProfile/${username}`, {
+        withCredentials: true,
+      });
+
+      if (data.statusCode === 200) {
+        setUserProfile(data.data); 
+      } else {
+        setError("User not found");
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      setError("Unable to fetch profile. Please try again.");
+    }
+  };
+
+  const handleSendMessageRequest = () => {
+    console.log("Sending message request...");
+  };
+
   return (
     <div className="w-full max-w-md mx-auto mt-10">
       <input
@@ -71,6 +92,7 @@ const SearchUser = () => {
             <li
               key={index}
               className="p-2 border-b border-gray-100 last:border-none cursor-pointer transition hover:bg-gray-300"
+              onClick={() => handleProfileClick(user.username)}  // Handle click on div
             >
               <div className="flex items-center space-x-4">
                 <img
@@ -89,6 +111,36 @@ const SearchUser = () => {
           )
         )}
       </ul>
+
+    
+      {userProfile && (
+        <div className="mt-6 p-6 border-t border-gray-200 bg-white rounded-lg shadow-lg">
+          <div className="flex items-center space-x-4">
+            <img
+              src={userProfile.profilePic || "/default-avatar.png"}
+              alt={`${userProfile.username}'s profile`}
+              className="w-32 h-32 rounded-full object-cover"
+            />
+            <div>
+              <h3 className="text-2xl font-semibold">{userProfile.username}</h3>
+              <p className="text-sm text-gray-500">{userProfile.email}</p>
+              <p className="text-sm text-gray-500">Birthdate: {new Date(userProfile.birthDate).toLocaleDateString()}</p>
+              <p className="text-sm text-gray-500">Active Chats: {userProfile.activeChats}</p>
+              <p className="text-sm text-gray-500">Friends: {userProfile.friends}</p>
+            </div>
+          </div>
+          
+    
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={handleSendMessageRequest}
+              className="py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+            >
+              Send Message Request
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

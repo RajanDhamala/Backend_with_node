@@ -2,13 +2,14 @@ import ChatUi from './componnets/ChatUi';
 import UserLogin from './componnets/UserLogin';
 import UserRegister from './componnets/UserRegister';
 import { BrowserRouter, Route, Routes, Link } from "react-router-dom";
-import  UserProfile from './componnets/UserProfile';
 import axios from 'axios';
 import OtpComponent from './componnets/OtpComponent';
 import ChatApp from './componnets/ChatApp';
 import AiAnalysis from './Shocket/AiAnalysis'
 import SendFriendRequest from './componnets/SendFriendRequest';
 import SearchUser from './componnets/SearchUser';
+import UserProfileCard from './profile/UserProfileCard';
+
 
 
 function App() {
@@ -39,14 +40,14 @@ function App() {
           <Link to={'/searchUser'} className='text-blue-500 hover:underline'>Get usrs</Link>
          
           <button onClick={(e)=>LogoutUser()} className='bg-red-500 text-white rounded-md px-2 hover:bg-red-600 hover:scale-105'>Logout</button>
-          
+      
 
         </div>
         <Routes>
           <Route path="/login" element={<UserLogin />} />
           <Route path="/chat" element={<ChatUi />} />
           <Route path="/" element={<UserRegister />} />
-          <Route path='/UserProfile' element={<UserProfile/>}></Route>
+          <Route path='/UserProfile' element={<UserProfileCard/>}></Route>
           <Route path='/Otp' element={<OtpComponent/>}></Route>
           <Route path='/ChatApp' element={<ChatApp/>}></Route>
           <Route path='/Sendrequest' element={<SendFriendRequest/>}></Route>
