@@ -5,7 +5,6 @@ import User from '../models/User.Model.js';
 const SendMessageRequest = asyncHandler(async (req, res) => {
     const senderName = req.user.username;
     const receiverName = req.body.receiverName;
-
     const requestedTo = await User.findOne({ username: receiverName });
     if (!requestedTo) {
         res.status(404);
@@ -16,14 +15,22 @@ const SendMessageRequest = asyncHandler(async (req, res) => {
         res.status(404);
         throw new Error('Sender user not found');
     }
+    const alreadyFriends = requestedTo.friends.includes(sender._id);
+    if (alreadyFriends) {
+        console.log('You are already friends');
+        return res.send(
+            new ApiResponse(400, 'You are already friends')
+        );
+    }
+
     const existingRequest = requestedTo.friendRequests.find(
         (request) => request.from.toString() === sender._id.toString()
     );
     if (existingRequest) {
-        return res.send
-        (
-            new ApiResponse(400,'Friend request already sent')
-        )
+        console.log('Friend request already sent');
+        return res.send(
+            new ApiResponse(400, 'Friend request already sent')
+        );
     }
     const friendRequest = {
         from: sender._id,
@@ -31,8 +38,9 @@ const SendMessageRequest = asyncHandler(async (req, res) => {
     requestedTo.friendRequests.push(friendRequest);
     await requestedTo.save();
 
-    res.send(new ApiResponse(200,'Friend request sent successfully'));
+    res.send(new ApiResponse(200, 'Friend request sent successfully'));
 });
+
 
 const SeeFriendRequests = asyncHandler(async (req, res) => {
     const username = req.user.username;
@@ -62,8 +70,6 @@ const SeeFriendRequests = asyncHandler(async (req, res) => {
   });
 
   const acceptRejectRequest = asyncHandler(async (req, res) => {
-
-    console.log("some one calling me")
     const username = req.user.username;  
     const { action, requestUser } = req.params;  
 
@@ -93,7 +99,6 @@ const SeeFriendRequests = asyncHandler(async (req, res) => {
       user.friends.push(requestSender._id); 
       requestSender.friends.push(user._id); 
   
-     
       user.friendRequests.splice(existingRequestIndex, 1);
       await user.save();
       await requestSender.save();

@@ -12,15 +12,21 @@ function UserProfile() {
 const [message,setMessage]=useState('');
 
 
-  const handelAcceptReject=(username,action)=>{
-    axios.post(`http://localhost:8000/api/friendRequest/${action}/${username}`
-    ,{withCredentials:true}).
-    then((response)=>{
-      console.log(response.data);
-    }).catch((err)=>{
-      console.log(err);
-    })
-  }
+const handelAcceptReject = (username, action) => {
+  console.log('Action:', action, 'Username:', username); // Debug logs
+  axios.post(
+      `http://localhost:8000/api/friend-request/${action}/${username}`,
+      {}, // Empty body
+      { withCredentials: true } // Pass credentials
+  )
+  .then((response) => {
+      console.log('Response:', response.data); // Success
+  })
+  .catch((err) => {
+      console.error('Error:', err.response?.data || err.message); // Errors
+  });
+};
+
 
   const callRequestApi=()=>{
     axios.get("http://localhost:8000/api/requestList", { withCredentials: true })
