@@ -123,7 +123,7 @@ const showFriendsList = asyncHandler(async (req, res) => {
         return res.status(401).json(new ApiResponse(401, 'Unauthorized: Valid user required'));
     }
 
-    const existingUser = await User.findOne({ username }).populate('friends', 'username profilePic');
+    const existingUser = await User.findOne({ username }).populate('friends', 'username profilePic isActive');
 
     if (!existingUser) {
         return res.status(404).json(new ApiResponse(404, 'User not found in database'));
@@ -142,10 +142,10 @@ if (!existingUser){
         new ApiResponse(400,'user not found in database')
     )
 }
-
-
-
 })
+const activeUsers = await User.find({ isActive: true }).select('username isActive');
+
+return res.send(new ApiResponse(200, 'Active users retrieved successfully', activeUsers));
 
 
 export { 

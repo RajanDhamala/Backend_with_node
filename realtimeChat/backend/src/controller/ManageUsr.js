@@ -295,7 +295,7 @@ const handleUpload = asyncHandler(async (req, res) => {
     ? { username: { $regex: search, $options: "i" } } 
     : {};
 
-  const users = await User.find(filter).select("username profilePic -_id");
+  const users = await User.find(filter).select("username profilePic -_id isActive");
   return res.json(new ApiResponse(200, "Filtered Users", users));
 });
 
@@ -353,7 +353,8 @@ const getUserProfile=asyncHandler (async (req,res)=>{
     email: user.email ? user.email.substring(0, 3) + "****@" + user.email.split("@")[1] : null,
     birthDate: user.birthDate,
     activeChats: user.activeChats ? user.activeChats.length : 0,
-    friends: user.friends ? user.friends.length : 0
+    friends: user.friends ? user.friends.length : 0,
+    active: user?.isActive
   }));  
 })
 
