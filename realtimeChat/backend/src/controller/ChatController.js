@@ -116,8 +116,43 @@ const SeeFriendRequests = asyncHandler(async (req, res) => {
     }
 });
 
+const showFriendsList = asyncHandler(async (req, res) => {
+    const { username } = req.params;
+
+    if (!req.user) {
+        return res.status(401).json(new ApiResponse(401, 'Unauthorized: Valid user required'));
+    }
+
+    const existingUser = await User.findOne({ username }).populate('friends', 'username profilePic');
+
+    if (!existingUser) {
+        return res.status(404).json(new ApiResponse(404, 'User not found in database'));
+    }
+    console.log(existingUser.friends)
+    return res.status(200).json(new ApiResponse(200, 'Friends list retrieved successfully', existingUser.friends));
+});
+
+const seeActiveUsers=asyncHandler (async (req,res)=>{
+const user=req.user.username
+
+const existingUser=User.findOne({username:user})
+
+if (!existingUser){
+    return res.send(
+        new ApiResponse(400,'user not found in database')
+    )
+}
+
+
+
+})
+
+
 export { 
     SendMessageRequest,
     SeeFriendRequests,
     acceptRejectRequest
+    ,showFriendsList,
+    seeActiveUsers
+
  };

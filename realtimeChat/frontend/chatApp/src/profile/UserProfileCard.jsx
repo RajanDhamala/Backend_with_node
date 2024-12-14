@@ -13,21 +13,19 @@ const [message,setMessage]=useState('');
 
 
 const handelAcceptReject = (username, action) => {
-  console.log('Action:', action, 'Username:', username); // Debug logs
+  console.log('Action:', action, 'Username:', username); 
   axios.post(
       `http://localhost:8000/api/friend-request/${action}/${username}`,
-      {}, // Empty body
-      { withCredentials: true } // Pass credentials
+      {}, 
+      { withCredentials: true } 
   )
   .then((response) => {
-      console.log('Response:', response.data); // Success
+      console.log('Response:', response.data); 
   })
   .catch((err) => {
-      console.error('Error:', err.response?.data || err.message); // Errors
+      console.error('Error:', err.response?.data || err.message); 
   });
 };
-
-
   const callRequestApi=()=>{
     axios.get("http://localhost:8000/api/requestList", { withCredentials: true })
     .then((response)=>{
@@ -154,7 +152,6 @@ const handelAcceptReject = (username, action) => {
     </button>
   </div>
 )}
-
           </div>
         </div>
         <div className="mt-20 text-center border-b pb-5">
@@ -177,3 +174,4 @@ const handelAcceptReject = (username, action) => {
 }
 
 export default UserProfile;
+
