@@ -1,11 +1,9 @@
 import dotenv from "dotenv";
 import app from "./app.js";
-import connectDb from "./src/database/connect.js";
+import connectDb from './src/database/connect.js'
 import { Server } from "socket.io";
 import http from "http";
 import handleSocketConnection from "./src/controller/Socket.io.js";
-
-
 dotenv.config();
 
 connectDb().then(() => {

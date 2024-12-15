@@ -132,7 +132,11 @@ const showFriendsList = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, 'Friends list retrieved successfully', existingUser.friends));
 });
 
-const seeActiveUsers=asyncHandler (async (req,res)=>{
+
+
+
+const seeActiveUser=asyncHandler(async (req,res)=>{
+const {username}=req.params
 const user=req.user.username
 
 const existingUser=User.findOne({username:user})
@@ -142,17 +146,16 @@ if (!existingUser){
         new ApiResponse(400,'user not found in database')
     )
 }
+const CheckifUserActive=await User.findOne({username}).select('isActive -_id')
+
+res.send(new ApiResponse(200,'response',CheckifUserActive))
 })
-const activeUsers = await User.find({ isActive: true }).select('username isActive');
-
-return res.send(new ApiResponse(200, 'Active users retrieved successfully', activeUsers));
-
 
 export { 
     SendMessageRequest,
     SeeFriendRequests,
     acceptRejectRequest
     ,showFriendsList,
-    seeActiveUsers
-
+    seeActiveUser,
+   
  };
