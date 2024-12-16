@@ -14,7 +14,6 @@ function UserProfile() {
   const [friendsList, setFriendsList] = useState([]);
   const [username, setUsername] = useState("");
 
-
   const handelFriendsList = async (e) => {
     e.preventDefault();
     try {
