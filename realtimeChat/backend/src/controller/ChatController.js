@@ -133,8 +133,6 @@ const showFriendsList = asyncHandler(async (req, res) => {
 });
 
 
-
-
 const seeActiveUser=asyncHandler(async (req,res)=>{
 const {username}=req.params
 const user=req.user.username

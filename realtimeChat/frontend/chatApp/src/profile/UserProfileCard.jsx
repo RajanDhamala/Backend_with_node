@@ -9,8 +9,25 @@ function UserProfile() {
   const [error, setError] = useState(false);
   const [toggleVisReq, settoggleVisReq] = useState(false);
   const [friendRequests, setFriendRequests] = useState([]);
-const [message,setMessage]=useState('');
+  const [message,setMessage]=useState('');
+  const [friendsListVisible, setFriendsListVisible] = useState(false);
+  const [friendsList, setFriendsList] = useState([]);
+  const [username, setUsername] = useState("");
 
+
+  const handelFriendsList = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.get(
+        `http://localhost:8000/api/friendsList/${username}`,
+        { withCredentials: true }
+      );
+      setFriendsList(res.data.data);
+      setFriendsListVisible(true);
+    } catch (err) {
+      console.error("Error fetching friends list:", err.response?.data || err.message);
+    }
+  };
 
 const handelAcceptReject = (username, action) => {
   console.log('Action:', action, 'Username:', username); 
@@ -45,6 +62,7 @@ const handelAcceptReject = (username, action) => {
         setUserData(response.data.data);
         console.log(response.data.data);
         setLoading(false);
+        setUsername(response.data.data.username);
       })
       .catch(() => {
         setError(true);
@@ -82,7 +100,7 @@ const handelAcceptReject = (username, action) => {
           <div className="grid grid-cols-3 text-center order-last md:order-first mt-3 md:mt-0">
             <div>
               <p className="font-bold text-gray-700 text-xl">{userData?.friends || 0}</p>
-              <p className="text-gray-400 cursor-pointer hover:scale-105 ">Friends</p>
+              <p className="text-gray-400 cursor-pointer hover:scale-105 " onClick={(e)=>handelFriendsList(e)}>Friends</p>
             </div>
             <div>
               <p className="font-bold text-gray-700 text-xl">{userData?.friendRequests || 0}</p>
@@ -168,6 +186,43 @@ const handelAcceptReject = (username, action) => {
             Show more
           </button>
         </div>
+
+
+        {friendsListVisible && (
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg w-full max-w-md md:max-w-lg lg:max-w-xl">
+            <h2 className="text-lg font-bold mb-4 text-center">Friends List</h2>
+            <div className="space-y-4 max-h-80 overflow-y-auto">
+              {friendsList.map((friend, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-2 bg-gray-100 rounded-lg shadow-sm"
+                >
+                  <div className="flex items-center">
+                    <img
+                      src={friend.profilePic}
+                      alt={friend.username}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                    <p className="ml-3 font-medium">{friend.username}</p>
+                  </div>
+                  <span
+                    className={`px-3 py-1 text-sm rounded ${
+                      friend.isActive ? "bg-green-200 text-green-700" : "bg-red-200 text-red-700"
+                    }`}
+                  >
+                    {friend.isActive ? "Online" : "Offline"}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <button
+              className="mt-4 px-4 py-2 w-full bg-gray-700 text-white rounded hover:bg-gray-800"
+              onClick={() => setFriendsListVisible(false)}
+            >
+              Close
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
