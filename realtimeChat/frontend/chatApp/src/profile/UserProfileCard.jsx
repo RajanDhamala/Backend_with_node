@@ -37,6 +37,7 @@ const handelAcceptReject = (username, action) => {
   )
   .then((response) => {
       console.log('Response:', response.data); 
+      window.location.reload();
   })
   .catch((err) => {
       console.error('Error:', err.response?.data || err.message); 

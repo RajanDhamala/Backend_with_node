@@ -1,6 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiResponse} from "../utils/ApiResponse.js"
 import User from '../models/User.Model.js';
+import  Checkfriedshipfrom from '../utils/ChatUtils.js'
 
 const SendMessageRequest = asyncHandler(async (req, res) => {
     const senderName = req.user.username;
@@ -70,17 +71,18 @@ const SeeFriendRequests = asyncHandler(async (req, res) => {
   });
 
   const acceptRejectRequest = asyncHandler(async (req, res) => {
-    const username = req.user.username;  
-    const { action, requestUser } = req.params;  
+    const username = req.user.username; 
+    const { action, requestUser } = req.params; 
+    console.log(username, action, requestUser); 
 
     if (!action || !requestUser) {
         return res.status(400).send(new ApiResponse(400, "Action and requestUser are required"));
     }
+
     if (action !== 'accept' && action !== 'reject') {
         return res.status(400).send(new ApiResponse(400, "Invalid action"));
     }
-
-    const user = await User.findOne({ username }).populate('friendRequests.from', 'username profilePic');
+    const user = await User.findOne({ username }).populate('friendRequests.from', '_id username profilePic');
     if (!user) {
         return res.status(404).send(new ApiResponse(404, "User not found"));
     }
@@ -88,33 +90,33 @@ const SeeFriendRequests = asyncHandler(async (req, res) => {
     if (!requestSender) {
         return res.status(404).send(new ApiResponse(404, "Request sender not found"));
     }
+
     const existingRequestIndex = user.friendRequests.findIndex(
-        (request) => request.from.username === requestUser
+        (request) => request.from._id.toString() === requestSender._id.toString()
     );
 
     if (existingRequestIndex === -1) {
         return res.status(400).send(new ApiResponse(400, "No pending friend request found"));
     }
+
     if (action === 'accept') {
-      user.friends.push(requestSender._id); 
-      requestSender.friends.push(user._id); 
-  
-      user.friendRequests.splice(existingRequestIndex, 1);
-      await user.save();
-      await requestSender.save();
-  
-      return res.send(
-          new ApiResponse(200, "Friend request accepted successfully")
-      );
-  }
+        user.friends.push(requestSender._id);
+        requestSender.friends.push(user._id);
+
+        user.friendRequests.splice(existingRequestIndex, 1);
+        await user.save();
+        await requestSender.save();
+
+        return res.send(new ApiResponse(200, "Friend request accepted successfully"));
+    }
+
     if (action === 'reject') {
         user.friendRequests.splice(existingRequestIndex, 1);
         await user.save();
-        return res.send(
-          new ApiResponse(200, "Friend request rejected successfully")
-        )
+        return res.send(new ApiResponse(200, "Friend request rejected successfully"));
     }
 });
+
 
 const showFriendsList = asyncHandler(async (req, res) => {
     const { username } = req.params;
@@ -149,11 +151,29 @@ const CheckifUserActive=await User.findOne({username}).select('isActive -_id')
 res.send(new ApiResponse(200,'response',CheckifUserActive))
 })
 
+
+const handelChatInitiation=asyncHandler(async (req,res)=>{
+    const firstperson=req.user.username
+    const {secondperson}=req.body
+
+   const isfrand=await Checkfriedshipfrom(firstperson,secondperson)
+
+   if(!isfrand){
+       return res.send(
+           new ApiResponse(400,'You are not friends')
+       )
+   }
+
+   return res.send(
+       new ApiResponse(200,'you are friends and now can proceed to chat')
+   )
+})
+
 export { 
     SendMessageRequest,
     SeeFriendRequests,
     acceptRejectRequest
     ,showFriendsList,
     seeActiveUser,
-   
+    handelChatInitiation
  };

@@ -4,8 +4,9 @@ import {registerUser,LoginUser,LogoutUser,UserProfile,handleUpload,OtpHandeling,
 OtpVerification,handelAi,handelAiImg,aiImgAnalysis,gptJsonResponse,getAllUsers,searchUser,uploadProfilePic, getUserProfile} from '../controller/ManageUsr.js';
 import upload from '../middleware/MulterFileUpload.js';
 import ImageAnalysis from '../middleware/MulterImgAnalysis.js'
-import {SendMessageRequest,SeeFriendRequests,acceptRejectRequest,seeActiveUser,showFriendsList} from '../controller/ChatController.js'
+import {SendMessageRequest,SeeFriendRequests,acceptRejectRequest,seeActiveUser,showFriendsList,handelChatInitiation} from '../controller/ChatController.js'
 import UploadPfp from '../middleware/MulterpfpUpload.js'
+
 
 const route=express.Router();
 
@@ -36,10 +37,14 @@ route.get('/getProfile/:username',JwtAuthenticate, getUserProfile)
 
 route.get('/requestList',JwtAuthenticate,SeeFriendRequests)
 
-route.post('/friend-request/:action/:requestUser',JwtAuthenticate,acceptRejectRequest)
+route.post('/friend-request/:action/:requestUser',JwtAuthenticate,acceptRejectRequest
+)
 
 route.get('/status/:username',JwtAuthenticate,seeActiveUser)
 
 route.get('/friendsList/:username',JwtAuthenticate,showFriendsList)
+
+route.get('/checkFriendship',JwtAuthenticate,handelChatInitiation)
+  
 
 export default route

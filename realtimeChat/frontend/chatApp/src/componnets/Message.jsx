@@ -17,14 +17,6 @@ function ChatApp() {
       setMessageRequests((prev) => [...prev, { sender, status: 'pending' }]);
     });
 
-    newSocket.on('message_request_accepted', (user) => {
-      setMessages((prev) => [...prev, { sender: 'System', text: `${user} accepted your message request` }]);
-    });
-
-    newSocket.on('message_request_rejected', (user) => {
-      setMessages((prev) => [...prev, { sender: 'System', text: `${user} rejected your message request` }]);
-    });
-
     newSocket.on('connect_error', (err) => {
       console.error("Socket connection error:", err);
     });
