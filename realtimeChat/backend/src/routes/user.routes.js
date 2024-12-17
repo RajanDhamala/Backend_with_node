@@ -7,7 +7,6 @@ import ImageAnalysis from '../middleware/MulterImgAnalysis.js'
 import {SendMessageRequest,SeeFriendRequests,acceptRejectRequest,seeActiveUser,showFriendsList,handelChatInitiation} from '../controller/ChatController.js'
 import UploadPfp from '../middleware/MulterpfpUpload.js'
 
-
 const route=express.Router();
 
 route.post("/register",registerUser);
