@@ -7,11 +7,11 @@ function handleSocketConnection(io) {
    
     socket.on('join_room', async ({ username, friendUsername }) => {
       const isFriend = await CheckFriendship(username, friendUsername);
-
+console.log(isFriend);
       if (isFriend) {
         socket.join(friendUsername);
-        console.log(`User ${socket.id} joined room ${friendUsername}`);
-        socket.emit('room-joined', { message: `${username} has joined the room` });
+        console.log(`User ${socket.id} joined room with ${friendUsername}`);
+        socket.emit('room-joined', { message: `${username} has joined the room`});
 
         io.to(friendUsername).emit('room-joined', { message: `${username} has joined the room` });
       } else {

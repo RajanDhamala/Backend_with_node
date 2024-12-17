@@ -16,6 +16,7 @@ function ChatApp() {
   const joinRoom = () => {
     if (username.trim() && friendUsername.trim()) {
       socket.emit('join_room', { username, friendUsername });
+      console.log('Joining room:', username, friendUsername);
     }
   };
 
@@ -24,6 +25,7 @@ function ChatApp() {
     if (message.trim() && username.trim()) {
       socket.emit('send_message', { username: friendUsername, message, senderUsername: username });
       setMessage('');
+      console.log('Message sent:', message);
     }
   };
 
@@ -36,6 +38,7 @@ function ChatApp() {
   useEffect(() => {
     // Listen for room join confirmation
     socket.on('room-joined', (data) => {
+      console.log(data);
       alert(data.message);
       setRoomJoined(true);
       setError(''); // Clear error messages
@@ -43,6 +46,7 @@ function ChatApp() {
 
     // Listen for error if the user tries to join without friendship
     socket.on('room-error', (data) => {
+      console.log(data);
       setError(data.message);
       setRoomJoined(false);
     });
