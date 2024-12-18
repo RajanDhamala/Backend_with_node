@@ -118,7 +118,6 @@ const LogoutUser = asyncHandler(async (req, res) => {
         secure: true,
     });
 
-  
     return res.json({
         status: 200,
         message: "User logged out successfully",

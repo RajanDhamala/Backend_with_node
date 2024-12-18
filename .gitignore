@@ -118,3 +118,6 @@ dist
 .pnp.*
 
 # End of https://mrkandreev.name/snippets/gitignore-generator/#Node
+realtimeChat/backend/temp/profileimg/char.webp.webp
+.gitignore
+realtimeChat/backend/temp/profileimg/char.webp.webp
