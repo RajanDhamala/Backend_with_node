@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiResponse} from "../utils/ApiResponse.js"
 import User from '../models/User.Model.js';
 import  Checkfriedshipfrom from '../utils/ChatUtils.js'
+import Chat from '../models/Group.Model.js';
 
 const SendMessageRequest = asyncHandler(async (req, res) => {
     const senderName = req.user.username;
@@ -169,11 +170,60 @@ const handelChatInitiation=asyncHandler(async (req,res)=>{
    )
 })
 
+const createChatdtabase=asyncHandler(async (req,res)=>{
+    const {receiver,message}=req.params
+    const sender=req.user.username
+
+    if(!receiver || !message){
+        return res.send(
+            new ApiResponse(400,'receiver and message are required')
+        )
+    }
+
+    if(!sender){
+        return res.send(
+            new ApiResponse(400,'sender not found')
+        )
+    }
+
+const senderUser = await User.findOne({ username: 'rijandhamala' });
+const receiverUser = await User.findOne({ username: 'rajandhamala' });
+
+if (!senderUser || !receiverUser) {
+  return res.status(400).send('Sender or receiver not found');
+}
+
+let chat = await Chat.findOne({
+  participants: {
+    $all: [senderUser._id, receiverUser._id]
+  }
+});
+
+if(!chat){
+    chat = new Chat({
+        participants: [senderUser._id, receiverUser._id],
+      });
+    await chat.save();
+    console.log('New chat created:', chat);
+    return res.send(new ApiResponse(200, 'Chat initiated successfully'));
+}
+
+chat.messages.push({
+    sender: senderUser._id,
+  });
+
+  await chat.save();
+  console.log('Message sent:', message);
+  return res.status(200).send('Message sent');
+
+})
+
 export { 
     SendMessageRequest,
     SeeFriendRequests,
     acceptRejectRequest
     ,showFriendsList,
     seeActiveUser,
-    handelChatInitiation
+    handelChatInitiation,
+    createChatdtabase
  };

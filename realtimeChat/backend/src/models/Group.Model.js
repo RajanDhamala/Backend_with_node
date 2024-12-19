@@ -1,11 +1,12 @@
 import mongoose from "mongoose";
 import { Schema } from "mongoose";
 
+
 const oneToOneChatSchema = new Schema({
     participants: [
         {
             type: Schema.Types.ObjectId,
-            ref: 'User',
+            ref: 'Users',  
             required: true
         }
     ],
@@ -13,11 +14,11 @@ const oneToOneChatSchema = new Schema({
         {
             _id: {
                 type: Schema.Types.ObjectId,
-                default: () => new mongoose.Types.ObjectId()
+                default: () => new mongoose.Types.ObjectId() 
             },
             sender: {
                 type: Schema.Types.ObjectId,
-                ref: 'User',
+                ref: 'Users', 
                 required: true
             },
             message: {
@@ -36,13 +37,12 @@ const oneToOneChatSchema = new Schema({
                 {
                     participant: {
                         type: Schema.Types.ObjectId,
-                        ref: 'User',
+                        ref: 'Users',  
                         required: true
                     },
-                    state: {
-                        type: String,
-                        enum: ['sent', 'delivered', 'seen'],
-                        default: 'sent'
+                    isSeen: {
+                        type: Boolean,
+                        default: false
                     },
                     timestamp: {
                         type: Date,
@@ -54,6 +54,7 @@ const oneToOneChatSchema = new Schema({
     ]
 });
 
-const Chat = mongoose.model('ChatMessages', oneToOneChatSchema);
+
+const Chat = mongoose.model('Chat', oneToOneChatSchema);
 
 export default Chat;

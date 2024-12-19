@@ -44,7 +44,7 @@ function handleSocketConnection(io) {
         socket.on('send_message',async({friendUsername,message})=>{
             const recipientSocketId=users[friendUsername];
             if(!friendUsername || !message){
-                return;
+                return
             }
             console.log(`Message from ${username} to ${friendUsername}: ${message}`);
             io.to(recipientSocketId).emit('message',{'sendername':username,message});
