@@ -4,6 +4,7 @@ import User from '../models/User.Model.js';
 import  Checkfriedshipfrom from '../utils/ChatUtils.js'
 import Chat from '../models/Group.Model.js';
 
+
 const SendMessageRequest = asyncHandler(async (req, res) => {
     const senderName = req.user.username;
     const receiverName = req.body.receiverName;
@@ -170,53 +171,171 @@ const handelChatInitiation=asyncHandler(async (req,res)=>{
    )
 })
 
-const createChatdtabase=asyncHandler(async (req,res)=>{
-    const {receiver,message}=req.params
-    const sender=req.user.username
-
-    if(!receiver || !message){
-        return res.send(
-            new ApiResponse(400,'receiver and message are required')
-        )
+const createChatDatabase = asyncHandler(async (req, res) => {
+    const { receiver, message } = req.params;
+    const sender = req.user.username; 
+  
+    if (!receiver || !message) {
+      return res.status(400).send(new ApiResponse(400, 'Receiver and message are required'));
     }
-
-    if(!sender){
-        return res.send(
-            new ApiResponse(400,'sender not found')
-        )
+  
+    if (!sender) {
+      return res.status(400).send(new ApiResponse(400, 'Sender not found'));
     }
-
-const senderUser = await User.findOne({ username: 'rijandhamala' });
-const receiverUser = await User.findOne({ username: 'rajandhamala' });
-
-if (!senderUser || !receiverUser) {
-  return res.status(400).send('Sender or receiver not found');
-}
-
-let chat = await Chat.findOne({
-  participants: {
-    $all: [senderUser._id, receiverUser._id]
-  }
-});
-
-if(!chat){
-    chat = new Chat({
+  
+    const [senderUser, receiverUser] = await Promise.all([
+      User.findOne({ username: sender }),
+      User.findOne({ username: receiver }),
+    ]);
+  
+    if (!senderUser || !receiverUser) {
+      return res.status(400).send(new ApiResponse(400, 'Sender or receiver not found'));
+    }
+  
+    let chat = await Chat.findOne({
+      participants: { $all: [senderUser._id, receiverUser._id] },
+    });
+  
+    if (!chat) {
+      chat = new Chat({
         participants: [senderUser._id, receiverUser._id],
+        messages: [{ sender: senderUser._id, message }],
       });
+      await chat.save();
+  
+      senderUser.activeChats.push(chat._id);
+      receiverUser.activeChats.push(chat._id);
+      await Promise.all([senderUser.save(), receiverUser.save()]);
+  
+      console.log('New chat created:', chat);
+      return res.status(201).send(new ApiResponse(201, 'Chat initiated successfully'));
+    }
+  
+    chat.messages.push({
+      sender: senderUser._id,
+      message,
+    });
+  
     await chat.save();
-    console.log('New chat created:', chat);
-    return res.send(new ApiResponse(200, 'Chat initiated successfully'));
-}
-
-chat.messages.push({
-    sender: senderUser._id,
+    console.log('Message sent:', message);
+    return res.status(200).send(new ApiResponse(200, 'Message sent successfully'));
   });
 
-  await chat.save();
-  console.log('Message sent:', message);
-  return res.status(200).send('Message sent');
 
-})
+  const getActiveChats = asyncHandler(async (req, res) => {
+    const username = req.user.username;
+  
+    if (!username) {
+      return res.status(400).send(
+        new ApiResponse(400, 'Invalid cookie or user not found in database')
+      );
+    }
+  
+    const existingChats = await User.findOne({ username }).populate({
+      path: 'activeChats',
+      populate: {
+        path: 'participants',
+        select: 'username profilePic',
+      },
+    });
+  
+    if (!existingChats || existingChats.activeChats.length === 0) {
+      return res.status(400).send(
+        new ApiResponse(400, 'No active chats found')
+      );
+    }
+  
+
+    const activeChats = existingChats.activeChats.map(chat => ({
+      chatId: chat._id,
+      participants: chat.participants
+        .filter(participant => participant.username !== username) 
+        .map(participant => ({
+          username: participant.username,
+          profilePic: participant.profilePic,
+        })),
+    }));
+  
+    return res.status(200).send(
+      new ApiResponse(200, 'Active chats', { activeChats })
+    );
+  });
+
+  const saveChats = asyncHandler(async (req, res) => {
+    const senderId = req.user.id; 
+    const { receiver, message } = req.body;
+  
+    console.log("sender", senderId, receiver, message);
+  
+    if (!receiver || !message) {
+      return res.status(400).send(
+        new ApiResponse(400, 'Receiver and message are required')
+      );
+    }
+  
+    const receiverUser = await User.findOne({ username: receiver })
+      .populate('activeChats')
+      .select('activeChats username');
+  
+    if (!receiverUser) {
+      return res.status(404).send(
+        new ApiResponse(404, `Receiver '${receiver}' not found`)
+      );
+    }
+  
+    const existingChat = await Chat.findOne({
+      participants: { $all: [senderId, receiverUser._id] },
+    });
+  
+    if (!existingChat) {
+      return res.status(400).send(
+        new ApiResponse(400, 'Chat not found. Contact the administrator for access')
+      );
+    }
+  
+    existingChat.messages.push({
+      sender: senderId,
+      message,
+    });
+  
+    await existingChat.save();
+    return res.status(200).send(
+      new ApiResponse(200, `Message sent successfully to ${receiver}`)
+    );
+  });
+
+  const getChats = asyncHandler(async (req, res) => {
+    const username = req.user.username;
+    const receiver = req.params.receiver; 
+    const sizeofChat = parseInt(req.params.size || 10); 
+    if (!receiver) {
+      return res.status(400).send(new ApiResponse(400, 'Receiver is required'));
+    }
+
+    const receiverUser = await User.findOne({ username: receiver }).select('_id');
+    if (!receiverUser) {
+      return res.status(404).send(new ApiResponse(404, 'Receiver not found'));
+    }
+  
+    const receiverId = receiverUser._id;
+    const existingChat = await Chat.findOne({
+      participants: { $all: [req.user.id, receiverId] },
+    })
+      .populate('participants', 'username') 
+      .populate('messages.sender', 'username')
+      .populate('messages.status.participant', 'username') 
+      .lean(); 
+    if (!existingChat) {
+      return res.status(404).send(new ApiResponse(404, 'Chat not found'));
+    }
+  
+    existingChat.messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  
+    existingChat.messages = existingChat.messages.slice(-sizeofChat);
+  
+    res.status(200).send(new ApiResponse(200, 'Chat found', existingChat));
+  });
+  
 
 export { 
     SendMessageRequest,
@@ -225,5 +344,8 @@ export {
     ,showFriendsList,
     seeActiveUser,
     handelChatInitiation,
-    createChatdtabase
+    createChatDatabase,
+    getActiveChats,
+    saveChats,
+    getChats
  };

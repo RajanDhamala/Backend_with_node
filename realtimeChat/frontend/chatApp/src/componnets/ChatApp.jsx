@@ -1,38 +1,85 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
+import { debounce } from 'lodash';
 import io from 'socket.io-client';
 
 const socket = io('http://localhost:8000', {
   withCredentials: true,
 });
 
-let typingTimeout;
-let debounceTimer;
-
 function ChatApp() {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
+  const [activeChats, setActiveChats] = useState([]);
   const [friendUsername, setFriendUsername] = useState('');
-  const [roomJoined, setRoomJoined] = useState(false);
+  const [selectedChat, setSelectedChat] = useState(null);
   const [typing, setTyping] = useState(false);
-  const username = 'you';
   const chatContainerRef = useRef(null);
 
-  const joinRoom = () => {
-    if (friendUsername.trim()) {
-      socket.emit('join_room', { friendUsername });
-      console.log(`Joining room with: ${friendUsername}`);
-    }
+  let typingTimeout = useRef(null);
+  let debounceTimer = useRef(null);
+
+  useEffect(() => {
+    const fetchActiveChats = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/activeChats', {
+          withCredentials: true, 
+        });
+        const { statusCode, data } = response.data;
+        if (statusCode === 200) {
+          setActiveChats(data.activeChats);
+        } else {
+          console.error('Failed to fetch active chats');
+        }
+      } catch (error) {
+        console.error('Error fetching active chats:', error);
+      }
+    };
+
+    fetchActiveChats();
+  }, []);
+
+  const handleSelectChat = (username) => {
+    setFriendUsername(username);
+    setSelectedChat(username);
+    setMessages([]);
   };
 
+  const saveChatinDatabase = async () => {
+    try {
+      if (!friendUsername) {
+        console.error('Receiver (friendUsername) is missing');
+        return;
+      }
+  
+      const response = await axios.post('http://localhost:8000/api/saveChats', {
+        receiver: friendUsername, 
+        message: message,
+      }, { withCredentials: true });
+  
+      const { statusCode } = response.data;
+      if (statusCode === 200) {
+        console.log('Chat saved successfully');
+      } else {
+        console.error('Failed to save chat');
+      }
+      console.log('response:', response.data);
+    } catch (error) {
+      console.error('Error saving chat:', error);
+    }
+  }
+  
   const sendMessage = () => {
-    if (message.trim() && roomJoined) {
-      socket.emit('send_message', { friendUsername, message });
+    if (message.trim() && selectedChat) {
+      saveChatinDatabase(); 
+      socket.emit('send_message', { friendUsername: selectedChat, message });
       setMessages((prevMessages) => [
         ...prevMessages,
-        { sendername: username, message },
+        { sendername: 'you', message },
       ]);
       setMessage('');
-      console.log(`Message sent to ${friendUsername}: ${message}`);
+    } else {
+      console.error('Message or selected chat is missing');
     }
   };
 
@@ -40,17 +87,17 @@ function ChatApp() {
     const newMessage = e.target.value;
     setMessage(newMessage);
 
-    clearTimeout(debounceTimer);
-
-    debounceTimer = setTimeout(() => {
-      socket.emit('typing', { friendUsername });
+   
+    clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      socket.emit('typing', { friendUsername: selectedChat });
     }, 200);
 
-    clearTimeout(typingTimeout);
 
-    typingTimeout = setTimeout(() => {
-      socket.emit('stop_typing', { friendUsername });
-    }, 1000);
+    clearTimeout(typingTimeout.current);
+    typingTimeout.current = setTimeout(() => {
+      socket.emit('stop_typing', { friendUsername: selectedChat });
+    }, 1500);
   };
 
   const scrollToBottom = () => {
@@ -60,12 +107,6 @@ function ChatApp() {
   };
 
   useEffect(() => {
-    socket.on('room-joined', (data) => {
-      console.log('Room joined:', data);
-      alert(`Connected with ${data.username}`);
-      setRoomJoined(true);
-    });
-
     socket.on('message', (data) => {
       setMessages((prevMessages) => [
         ...prevMessages,
@@ -74,88 +115,110 @@ function ChatApp() {
     });
 
     socket.on('typing', (data) => {
-      if (data.sendername === friendUsername) {
+      if (data.sendername === selectedChat) {
         setTyping(true);
       }
     });
 
     socket.on('stop_typing', (data) => {
-      if (data.sendername === friendUsername) {
+      if (data.sendername === selectedChat) {
         setTyping(false);
       }
     });
 
     return () => {
-      socket.off('room-joined');
       socket.off('message');
       socket.off('typing');
       socket.off('stop_typing');
     };
-  }, [friendUsername]);
+  }, [selectedChat]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
   return (
-    <div className="px-5 py-4 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">1:1 Chat Application</h1>
-
-      <div className="flex gap-2 mb-4">
-        <input
-          type="text"
-          className="flex-grow focus:outline-none border-2 px-4 py-2 rounded-md bg-gray-200"
-          placeholder="Enter friend's username"
-          value={friendUsername}
-          onChange={(e) => setFriendUsername(e.target.value)}
-        />
-        <button
-          className="rounded-md bg-blue-500 text-white hover:bg-blue-600 px-4 py-2"
-          onClick={joinRoom}
-        >
-          Join Chat
-        </button>
+    <div className="flex h-screen">
+      <div className="w-1/3 border-r bg-gray-100">
+        <div className="p-4 border-b">
+          <h1 className="text-xl font-bold">Chats</h1>
+        </div>
+        <ul className="overflow-y-auto h-full">
+          {activeChats.map((chat) => (
+            <li
+              key={chat.chatId}
+              className={`p-4 cursor-pointer hover:bg-gray-200 ${selectedChat === chat.participants[0].username ? 'bg-blue-100' : ''}`}
+              onClick={() => handleSelectChat(chat.participants[0].username)}
+            >
+              <div className="flex items-center gap-4">
+                <img
+                  src={chat.participants[0].profilePic}
+                  alt="Profile"
+                  className="w-10 h-10 rounded-full"
+                />
+                <div>
+                  <div className="font-bold">{chat.participants[0].username}</div>
+                  <div className="text-sm text-gray-500">Last message preview...</div>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
 
-      <div
-        className="border rounded-lg p-4 h-80 overflow-y-auto bg-gray-50 flex flex-col"
-        ref={chatContainerRef}
-      >
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`p-2 mb-2 rounded-md text-white ${
-              msg.sendername === username ? 'bg-blue-500 self-end' : 'bg-green-500 self-start'
-            }`}
-            style={{ maxWidth: '70%' }}
-          >
-            <strong>{msg.sendername}:</strong> {msg.message}
-          </div>
-        ))}
-        {typing && (
-          <div className="text-sm text-gray-500 italic mb-2 self-start">
-            {friendUsername} is typing...
+      <div className="w-2/3 flex flex-col">
+        <div className="p-4 border-b bg-white flex items-center">
+          {selectedChat ? (
+            <div>
+              <h2 className="text-lg font-bold">{selectedChat}</h2>
+              <p className="text-sm text-gray-500">Online</p>
+            </div>
+          ) : (
+            <h2 className="text-lg font-bold">Select a chat</h2>
+          )}
+        </div>
+
+        <div className="flex-grow p-4 overflow-y-auto bg-gray-50" ref={chatContainerRef}>
+          {selectedChat ? (
+            <>
+              {messages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`p-2 mb-2 rounded-md text-white ${msg.sendername === 'you' ? 'bg-blue-500 self-end' : 'bg-green-500 self-start'}`}
+                  style={{ maxWidth: '70%' }}
+                >
+                  <strong>{msg.sendername}:</strong> {msg.message}
+                </div>
+              ))}
+              {typing && (
+                <div className="text-sm text-gray-500 italic mb-2">
+                  {selectedChat} is typing...
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-gray-500 italic">No chat selected</div>
+          )}
+        </div>
+
+        {selectedChat && (
+          <div className="p-4 border-t bg-white flex gap-2">
+            <input
+              type="text"
+              className="flex-grow border-2 px-4 py-2 rounded-md focus:outline-none"
+              placeholder="Type a message..."
+              value={message}
+              onChange={handleTyping}
+            />
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+              onClick={sendMessage}
+            >
+              Send
+            </button>
           </div>
         )}
       </div>
-
-      {roomJoined && (
-        <div className="flex gap-2 mt-4">
-          <input
-            type="text"
-            className="flex-grow focus:outline-none border-2 px-4 py-2 rounded-md bg-gray-200"
-            placeholder="Enter message"
-            value={message}
-            onChange={handleTyping}
-          />
-          <button
-            className="rounded-md bg-blue-500 text-white hover:bg-blue-600 px-4 py-2"
-            onClick={sendMessage}
-          >
-            Send
-          </button>
-        </div>
-      )}
     </div>
   );
 }
