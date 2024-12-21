@@ -11,6 +11,15 @@ const SendFriendRequest = () => {
     setProfilePicture(e.target.files[0]); e
   };
 
+  const createDatbase=async()=>{
+    try{
+      const response=await axios.get(`http://localhost:8000/api/chat/${usernameofFrand}/ennjoy the private realtime chat`,)
+    }catch(err){
+      console.log(err)
+    }
+
+  }
+
   const handleFriendRequest = async (e) => {
     e.preventDefault();
     setMessage("");

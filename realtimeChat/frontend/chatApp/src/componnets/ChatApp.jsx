@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { debounce } from 'lodash';
 import io from 'socket.io-client';
+import moment from 'moment'; // Import moment.js for time formatting
 
 const socket = io('http://localhost:8000', {
   withCredentials: true,
@@ -23,59 +23,83 @@ function ChatApp() {
     const fetchActiveChats = async () => {
       try {
         const response = await axios.get('http://localhost:8000/api/activeChats', {
-          withCredentials: true, 
+          withCredentials: true,
         });
         const { statusCode, data } = response.data;
         if (statusCode === 200) {
           setActiveChats(data.activeChats);
         } else {
           console.error('Failed to fetch active chats');
+          setActiveChats([]);
         }
       } catch (error) {
         console.error('Error fetching active chats:', error);
+        setActiveChats([]);
       }
     };
 
     fetchActiveChats();
   }, []);
 
+  const fetchChatMessages = async (receiver) => {
+    try {
+      const response = await axios.get(`http://localhost:8000/api/getChats/${receiver}/10`, {
+        withCredentials: true,
+      });
+      const { statusCode, data } = response.data;
+      if (statusCode === 200) {
+        setMessages(data.messages);
+      } else {
+        console.error('Failed to fetch messages for the chat');
+        setMessages([]);
+      }
+    } catch (error) {
+      console.error('Error fetching chat messages:', error);
+      setMessages([]);
+    }
+  };
+
   const handleSelectChat = (username) => {
     setFriendUsername(username);
     setSelectedChat(username);
-    setMessages([]);
+    setMessages([]); // Clear previous messages while loading new ones
+    fetchChatMessages(username); // Load the previous messages for the selected chat
   };
 
-  const saveChatinDatabase = async () => {
+  const saveChatInDatabase = async () => {
     try {
       if (!friendUsername) {
         console.error('Receiver (friendUsername) is missing');
         return;
       }
-  
+
       const response = await axios.post('http://localhost:8000/api/saveChats', {
-        receiver: friendUsername, 
+        receiver: friendUsername,
         message: message,
       }, { withCredentials: true });
-  
+
       const { statusCode } = response.data;
       if (statusCode === 200) {
         console.log('Chat saved successfully');
       } else {
         console.error('Failed to save chat');
       }
-      console.log('response:', response.data);
     } catch (error) {
       console.error('Error saving chat:', error);
     }
-  }
-  
+  };
+
   const sendMessage = () => {
     if (message.trim() && selectedChat) {
-      saveChatinDatabase(); 
+      saveChatInDatabase();
       socket.emit('send_message', { friendUsername: selectedChat, message });
       setMessages((prevMessages) => [
         ...prevMessages,
-        { sendername: 'you', message },
+        {
+          sender: { username: 'you' },
+          message,
+          timestamp: new Date().toISOString(),
+        },
       ]);
       setMessage('');
     } else {
@@ -87,12 +111,10 @@ function ChatApp() {
     const newMessage = e.target.value;
     setMessage(newMessage);
 
-   
     clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
       socket.emit('typing', { friendUsername: selectedChat });
     }, 200);
-
 
     clearTimeout(typingTimeout.current);
     typingTimeout.current = setTimeout(() => {
@@ -110,7 +132,11 @@ function ChatApp() {
     socket.on('message', (data) => {
       setMessages((prevMessages) => [
         ...prevMessages,
-        { sendername: data.sendername, message: data.message },
+        {
+          sender: data.sender,
+          message: data.message,
+          timestamp: data.timestamp,
+        },
       ]);
     });
 
@@ -144,7 +170,7 @@ function ChatApp() {
           <h1 className="text-xl font-bold">Chats</h1>
         </div>
         <ul className="overflow-y-auto h-full">
-          {activeChats.map((chat) => (
+          {(activeChats || []).map((chat) => (
             <li
               key={chat.chatId}
               className={`p-4 cursor-pointer hover:bg-gray-200 ${selectedChat === chat.participants[0].username ? 'bg-blue-100' : ''}`}
@@ -152,7 +178,7 @@ function ChatApp() {
             >
               <div className="flex items-center gap-4">
                 <img
-                  src={chat.participants[0].profilePic}
+                  src={chat.participants[0].profilePic || '/default-avatar.png'}
                   alt="Profile"
                   className="w-10 h-10 rounded-full"
                 />
@@ -181,18 +207,24 @@ function ChatApp() {
         <div className="flex-grow p-4 overflow-y-auto bg-gray-50" ref={chatContainerRef}>
           {selectedChat ? (
             <>
-              {messages.map((msg, index) => (
+              {(messages || []).map((msg, index) => (
                 <div
                   key={index}
-                  className={`p-2 mb-2 rounded-md text-white ${msg.sendername === 'you' ? 'bg-blue-500 self-end' : 'bg-green-500 self-start'}`}
+                  className={`p-2 mb-2 rounded-md text-white ${
+                    msg.sender.username === 'you' ? 'bg-blue-500 self-end' : 'bg-green-500 self-start'
+                  }`}
                   style={{ maxWidth: '70%' }}
                 >
-                  <strong>{msg.sendername}:</strong> {msg.message}
+                  <strong>{msg.sender.username}:</strong> {msg.message}
+                  <div className="text-xs text-gray-300 mt-1">
+                    {moment(msg.timestamp).format('hh:mm A')}
+                  </div>
                 </div>
               ))}
               {typing && (
-                <div className="text-sm text-gray-500 italic mb-2">
-                  {selectedChat} is typing...
+                <div className="flex items-center">
+                  <span className="loading loading-dots loading-sm"></span>
+                  <span className="text-sm text-gray-500 italic ml-2">{selectedChat} is typing...</span>
                 </div>
               )}
             </>

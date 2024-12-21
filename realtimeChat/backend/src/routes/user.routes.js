@@ -4,7 +4,7 @@ import {registerUser,LoginUser,LogoutUser,UserProfile,handleUpload,OtpHandeling,
 OtpVerification,handelAi,handelAiImg,aiImgAnalysis,gptJsonResponse,getAllUsers,searchUser,uploadProfilePic, getUserProfile} from '../controller/ManageUsr.js';
 import upload from '../middleware/MulterFileUpload.js';
 import ImageAnalysis from '../middleware/MulterImgAnalysis.js'
-import {SendMessageRequest,SeeFriendRequests,acceptRejectRequest,seeActiveUser,showFriendsList,handelChatInitiation, createChatDatabase, getActiveChats,saveChats,getChats} from '../controller/ChatController.js'
+import {SendMessageRequest,SeeFriendRequests,acceptRejectRequest,seeActiveUser,showFriendsList,handelChatInitiation, createChatDatabase, getActiveChats,saveChats,getChats,validateAllActiveChats} from '../controller/ChatController.js'
 import UploadPfp from '../middleware/MulterpfpUpload.js'
 
 const route=express.Router();
@@ -45,13 +45,15 @@ route.get('/friendsList/:username',JwtAuthenticate,showFriendsList)
 
 route.get('/checkFriendship',JwtAuthenticate,handelChatInitiation)
 
-route.get('/chat/:receiver/:message',JwtAuthenticate,  createChatDatabase)
+route.get('/chat/:receiver/:message',JwtAuthenticate,createChatDatabase)
 
 route.get('/activeChats',JwtAuthenticate,getActiveChats)
 
 route.post('/saveChats',JwtAuthenticate,saveChats)
 
 route.get('/getChats/:receiver/:size',JwtAuthenticate,getChats)
+
+route.get('/clear',JwtAuthenticate,validateAllActiveChats)
   
 
 export default route

@@ -9,13 +9,13 @@ const SearchUser = () => {
   const [error, setError] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
 
+
   const fetchSearchResults = useCallback(
     debounce(async (query) => {
       if (!query) {
         setSearchResults([]);
         return;
       }
-
       setIsLoading(true);
       setError(null);
 
@@ -53,6 +53,7 @@ const SearchUser = () => {
     e.target.onerror = null;
   };
 
+
   const handleProfileClick = async (username) => {
     try {
       const { data } = await axios.get(`http://localhost:8000/api/getProfile/${username}`, {
@@ -70,19 +71,57 @@ const SearchUser = () => {
     }
   };
 
-  const handleSendMessageRequest = (receiverName) => {
-    alert(receiverName);
+
+  const handleSendMessageRequest = async (receiverName) => {
     try {
-      axios
-        .post(`http://localhost:8000/api/sendRequest`, { receiverName }, { withCredentials: true })
-        .then((response) => {
-          console.log(response.data);
-        });
+      
+      const { data } = await axios.post(
+        `http://localhost:8000/api/sendRequest`,
+        { receiverName },
+        { withCredentials: true }
+      );
+
+      if (data.statusCode === 200) {
+        alert("Message request sent successfully.");
+      } else {
+        alert(data.message || "Failed to send message request.");
+      }
     } catch (error) {
-      console.log(error);
+      console.error("Error sending message request:", error);
+      setError("Unable to send message request. Please try again.");
     }
   };
 
+  const handleStartChat = async (receiver) => {
+    console.log("Starting chat with:", receiver);
+    
+    const initialMessage = encodeURIComponent("Welcome to the database chat!");
+  
+    try {
+      const { data } = await axios.get(
+        `http://localhost:8000/api/chat/${receiver}/${initialMessage}`,
+        { withCredentials: true }
+      );
+      if (data.statusCode === 201) {
+        alert("Chat initialized successfully.");
+      } else if (data.statusCode === 200) {
+        alert("Chat already exists.");
+      } else {
+        setError("Unexpected response. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error starting chat:", error);
+  
+      if (error.response && error.response.status === 404) {
+        setError("Sender or receiver not found.");
+      } else if (error.response && error.response.status === 400) {
+        setError("Invalid request. Ensure all fields are filled.");
+      } else {
+        setError("Unable to start chat. Please try again.");
+      }
+    }
+  };
+  
   return (
     <div className="w-full max-w-md mx-auto mt-10">
       <input
@@ -139,10 +178,11 @@ const SearchUser = () => {
               src={userProfile.profilePic || "/default-avatar.png"}
               alt={`${userProfile.username}'s profile`}
               className="w-32 h-32 rounded-full object-cover"
+              onError={handleImageError}
             />
             <div>
               <h3 className="text-2xl font-semibold">{userProfile.username}</h3>
-              <p className="text-sm text-gray-500">{userProfile.email}</p>
+              <p className="text-sm text-gray-500">Email: {userProfile.email}</p>
               <p className="text-sm text-gray-500">
                 Birthdate: {new Date(userProfile.birthDate).toLocaleDateString()}
               </p>
@@ -161,12 +201,18 @@ const SearchUser = () => {
             </div>
           </div>
 
-          <div className="mt-4 flex justify-center">
+          <div className="mt-4 flex space-x-4 justify-center">
             <button
               onClick={() => handleSendMessageRequest(userProfile.username)}
               className="py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
             >
               Send Message Request
+            </button>
+            <button
+              onClick={(e) => handleStartChat(userProfile.username)}
+              className="py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 transition"
+            >
+              Start Chat
             </button>
           </div>
         </div>

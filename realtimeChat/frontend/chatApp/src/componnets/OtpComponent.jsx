@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 
+
+
 const OtpComponent = () => {
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState(1); 
@@ -92,6 +94,9 @@ const OtpComponent = () => {
             {message}
           </div>
         )}
+      </div>
+      <div className="flex justify-center">
+
       </div>
     </div>
   );
