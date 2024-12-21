@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
-import moment from 'moment'; // Import moment.js for time formatting
+import moment from 'moment';
 
 const socket = io('http://localhost:8000', {
   withCredentials: true,
@@ -19,6 +19,7 @@ function ChatApp() {
   let typingTimeout = useRef(null);
   let debounceTimer = useRef(null);
 
+  // Fetch active chats on component mount
   useEffect(() => {
     const fetchActiveChats = async () => {
       try {
@@ -41,6 +42,7 @@ function ChatApp() {
     fetchActiveChats();
   }, []);
 
+  // Fetch chat messages when a specific chat is selected
   const fetchChatMessages = async (receiver) => {
     try {
       const response = await axios.get(`http://localhost:8000/api/getChats/${receiver}/10`, {
@@ -48,7 +50,9 @@ function ChatApp() {
       });
       const { statusCode, data } = response.data;
       if (statusCode === 200) {
-        setMessages(data.messages);
+        const existingChat = data.existingChat;
+        setMessages(existingChat.messages);
+        setFriendUsername(existingChat.participants[0].username); // Assuming first participant is the friend
       } else {
         console.error('Failed to fetch messages for the chat');
         setMessages([]);
@@ -60,39 +64,17 @@ function ChatApp() {
   };
 
   const handleSelectChat = (username) => {
-    setFriendUsername(username);
     setSelectedChat(username);
     setMessages([]); // Clear previous messages while loading new ones
     fetchChatMessages(username); // Load the previous messages for the selected chat
   };
 
-  const saveChatInDatabase = async () => {
-    try {
-      if (!friendUsername) {
-        console.error('Receiver (friendUsername) is missing');
-        return;
-      }
-
-      const response = await axios.post('http://localhost:8000/api/saveChats', {
-        receiver: friendUsername,
-        message: message,
-      }, { withCredentials: true });
-
-      const { statusCode } = response.data;
-      if (statusCode === 200) {
-        console.log('Chat saved successfully');
-      } else {
-        console.error('Failed to save chat');
-      }
-    } catch (error) {
-      console.error('Error saving chat:', error);
-    }
-  };
-
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (message.trim() && selectedChat) {
-      saveChatInDatabase();
-      socket.emit('send_message', { friendUsername: selectedChat, message });
+      // Emit the message through socket
+      socket.emit('send_message', { friendUsername: selectedChat, message, timestamp: new Date().toISOString() });
+
+      // Optimistically add the sent message to UI
       setMessages((prevMessages) => [
         ...prevMessages,
         {
@@ -101,7 +83,26 @@ function ChatApp() {
           timestamp: new Date().toISOString(),
         },
       ]);
-      setMessage('');
+
+      // Send the message to the database to update the conversation
+      try {
+        console.log('Saving message to database...');
+        const response = await axios.post('http://localhost:8000/api/saveChats', {
+          receiver: selectedChat,
+          message,
+          timestamp: new Date().toISOString(),
+        }, { withCredentials: true });
+
+        if (response.data.statusCode === 200) {
+          console.log('Message saved to database');
+        } else {
+          console.error('Failed to save message to database');
+        }
+      } catch (error) {
+        console.error('Error saving message to database:', error);
+      }
+
+      setMessage(''); // Clear the input field
     } else {
       console.error('Message or selected chat is missing');
     }
@@ -128,16 +129,19 @@ function ChatApp() {
     }
   };
 
+  // Listen for incoming messages and typing events
   useEffect(() => {
     socket.on('message', (data) => {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          sender: data.sender,
-          message: data.message,
-          timestamp: data.timestamp,
-        },
-      ]);
+      if (data.sendername === selectedChat) {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          {
+            sender: { username: data.sendername },
+            message: data.message,
+            timestamp: data.timestamp,
+          },
+        ]);
+      }
     });
 
     socket.on('typing', (data) => {

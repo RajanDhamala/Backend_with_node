@@ -41,13 +41,13 @@ function handleSocketConnection(io) {
           });
           
 
-        socket.on('send_message',async({friendUsername,message})=>{
+        socket.on('send_message',async({friendUsername,message,timestamp})=>{
             const recipientSocketId=users[friendUsername];
             if(!friendUsername || !message){
                 return
             }
-            console.log(`Message from ${username} to ${friendUsername}: ${message}`);
-            io.to(recipientSocketId).emit('message',{'sendername':username,message});
+            console.log(`Message from ${username} to ${friendUsername}: ${message} ${timestamp}`);
+            io.to(recipientSocketId).emit('message',{'sendername':username,message,'timestamp':timestamp});
         });
 
         socket.on('typing',async({friendUsername})=>{
@@ -56,7 +56,7 @@ function handleSocketConnection(io) {
                 return;
             }
             console.log(`${username} is typing...`);
-            io.to(recipientSocketId).emit('typing',{'sendername':username});
+            io.to(recipientSocketId).emit('typing',{'sendername':username ,'typing':true});
         });
 
         socket.on('stop_typing',async({friendUsername})=>{
@@ -65,7 +65,7 @@ function handleSocketConnection(io) {
                 return;
             }
             console.log(`${username} stopped typing...`);
-            io.to(recipientSocketId).emit('stop_typing',{'sendername':username});
+            io.to(recipientSocketId).emit('stop_typing',{'sendername':username ,'typing':false});
         });
 
         socket.on('disconnect', async (reason) => {

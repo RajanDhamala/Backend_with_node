@@ -320,7 +320,7 @@ const createChatDatabase = asyncHandler(async (req, res) => {
     const existingChat = await Chat.findOne({
       participants: { $all: [req.user.id, receiverId] },
     })
-      .populate('participants', 'username') 
+      .populate('participants', 'username profilePic',) 
       .populate('messages.sender', 'username')
       .populate('messages.status.participant', 'username') 
       .lean();
@@ -332,7 +332,7 @@ const createChatDatabase = asyncHandler(async (req, res) => {
     existingChat.messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
     existingChat.messages = existingChat.messages.slice(-sizeofChat);
     console.log(existingChat)
-    return res.status(200).send(new ApiResponse(200, 'Chat found', existingChat));
+    return res.status(200).send(new ApiResponse(200, 'Chat found', {existingChat,currentUser:username}));
     
   });
   
