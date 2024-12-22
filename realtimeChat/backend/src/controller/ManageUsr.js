@@ -75,6 +75,9 @@ const LoginUser=asyncHandler ( async (req,res)=>{
     }
     const accessToken=generateAccessToken(existingUser);
     const refreshToken=generateRefreshToken(existingUser);
+    const profilepic=existingUser.profilePic || 'no img in database';
+    const username1=existingUser.username;
+
     existingUser.RefreshToken=refreshToken;
     existingUser.save();
 
@@ -89,11 +92,16 @@ const LoginUser=asyncHandler ( async (req,res)=>{
     
     res.cookie(
         "accessToken",accessToken,{
-            httpOnly:true,
+            httpOnly:false,
             secure:true,
             maxAge: 7 * 24 * 60 * 60 * 1000,
         }
     )
+    res.cookie("CurrentUser", JSON.stringify({ username1, profilepic }), {
+      secure: true,
+      httpOnly: false,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
 
     return res.json(
         new ApiResponse(200,"User logged in successfully",{
@@ -116,6 +124,10 @@ const LogoutUser = asyncHandler(async (req, res) => {
     res.clearCookie("accessToken", {
         httpOnly: true,
         secure: true,
+    });
+    res.clearCookie("CurrentUser", {
+      secure: true,
+      httpOnly: true,
     });
 
     return res.json({
@@ -298,38 +310,42 @@ const handleUpload = asyncHandler(async (req, res) => {
   return res.json(new ApiResponse(200, "Filtered Users", users));
 });
 
-  const uploadProfilePic=asyncHandler(async (req,res)=>{
-
-    if(!req.file){
+const uploadProfilePic = asyncHandler(async (req, res) => {
+  if (!req.file) {
       console.log("Please provide an image");
-      return res.json(new ApiResponse(400,"Please provide an image",null));
-      }
+      return res.json(new ApiResponse(400, "Please provide an image", null));
+  }
+  const img = req.file;
+  const username = req.user.username;
 
-    const img=req.file
-    const username=req.user.username;
-
-    console.log(req.user)
-    if(!img){
-        return res.json(new ApiResponse(400,"Please provide an image",null));
-    }
-    const existingUser=await User.findOne({username});
-
-    console.log("Existing user:",existingUser);
-
-    if(!existingUser){
-        return res.json(new ApiResponse(400,"User not found",null));
-    }
-    try {
+  if (!img) {
+      return res.json(new ApiResponse(400, "Please provide an image", null));
+  }
+  const existingUser = await User.findOne({ username });
+  if (!existingUser) {
+      return res.json(new ApiResponse(400, "User not found", null));
+  }
+  try {
       const fileUrl = await uploadFileToCloudinary(img.path, "Profile_pictures", username);
       existingUser.profilePic = fileUrl;
-      console.log("Existing user after update:", existingUser); 
       await existingUser.save();
+      res.cookie(
+          "CurrentUser",
+          JSON.stringify({ username, profilePic: fileUrl }),
+          {
+              secure: true, 
+              httpOnly: false,
+              maxAge: 7 * 24 * 60 * 60 * 1000,
+          }
+      );
+
       return res.json(new ApiResponse(200, "Profile picture uploaded successfully", fileUrl));
   } catch (err) {
-      console.log(err, "Error in uploading profile pic");
+      console.error("Error in uploading profile pic:", err);
       return res.json(new ApiResponse(500, "Server Error", null));
   }
 });
+
 
 const getUserProfile=asyncHandler (async (req,res)=>{
   const {username}=req.params;

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
+
 const SendFriendRequest = () => {
   const [receiverName, setReceiverName] = useState("");
   const [profilePicture, setProfilePicture] = useState(null);
@@ -11,14 +12,6 @@ const SendFriendRequest = () => {
     setProfilePicture(e.target.files[0]); e
   };
 
-  const createDatbase=async()=>{
-    try{
-      const response=await axios.get(`http://localhost:8000/api/chat/${usernameofFrand}/ennjoy the private realtime chat`,)
-    }catch(err){
-      console.log(err)
-    }
-
-  }
 
   const handleFriendRequest = async (e) => {
     e.preventDefault();
@@ -128,6 +121,8 @@ const SendFriendRequest = () => {
       {error && (
         <p className="mt-4 text-red-600 text-sm text-center">{error}</p>
       )}
+
+
     </div>
   );
 };

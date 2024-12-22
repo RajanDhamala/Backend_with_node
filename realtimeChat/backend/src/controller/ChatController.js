@@ -304,12 +304,12 @@ const createChatDatabase = asyncHandler(async (req, res) => {
   const getChats = asyncHandler(async (req, res) => {
     const username = req.user.username;
     const receiver = req.params.receiver;
-    const sizeofChat = parseInt(req.params.size || 10);
+    const sizeofChat = parseInt(req.params.size || 20);
   
     if (!receiver) {
       return res.status(400).send(new ApiResponse(400, 'Receiver is required'));
     }
-
+  
     const receiverUser = await User.findOne({ username: receiver }).select('_id');
     if (!receiverUser) {
       return res.status(404).send(new ApiResponse(404, 'Receiver not found'));
@@ -320,21 +320,22 @@ const createChatDatabase = asyncHandler(async (req, res) => {
     const existingChat = await Chat.findOne({
       participants: { $all: [req.user.id, receiverId] },
     })
-      .populate('participants', 'username profilePic',) 
-      .populate('messages.sender', 'username')
-      .populate('messages.status.participant', 'username') 
+      .populate('participants', 'username')
+      .populate('messages.sender', 'username profilePic')
+      .populate('messages.status.participant', 'username')
+      .select({
+        messages: { $slice: [-sizeofChat, sizeofChat] } 
+      })
       .lean();
   
     if (!existingChat) {
       return res.status(404).send(new ApiResponse(404, 'Chat not found'));
     }
-
-    existingChat.messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    existingChat.messages = existingChat.messages.slice(-sizeofChat);
-    console.log(existingChat)
-    return res.status(200).send(new ApiResponse(200, 'Chat found', {existingChat,currentUser:username}));
-    
+  
+    console.log(existingChat);
+    return res.status(200).send(new ApiResponse(200, 'Chat found', { existingChat, currentUser: username }));
   });
+  
   
 
   const validateAllActiveChats = asyncHandler(async (req, res) => {

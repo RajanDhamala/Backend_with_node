@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
 import moment from 'moment';
+import Cookies from 'js-cookie';
+
 
 const socket = io('http://localhost:8000', {
   withCredentials: true,
@@ -11,15 +13,37 @@ function ChatApp() {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [activeChats, setActiveChats] = useState([]);
-  const [friendUsername, setFriendUsername] = useState('');
   const [selectedChat, setSelectedChat] = useState(null);
   const [typing, setTyping] = useState(false);
   const chatContainerRef = useRef(null);
-
+  const [LoginUser, setLoginUser] = useState(null);
+  const [LoginUserImage, setLoginUserImage] = useState(null);
+  const [isActive, setIsActive] = useState(false); 
   let typingTimeout = useRef(null);
   let debounceTimer = useRef(null);
+  let fetchTimeout = useRef(null);
 
-  // Fetch active chats on component mount
+  const handleActiveStatus = () => {
+    if (!isActive) {
+      socket.emit('user_active', { username: LoginUser });
+      setIsActive(true);
+    }
+  };
+
+  useEffect(() => {
+    const currentUser = Cookies.get('CurrentUser');
+    if (currentUser) {
+      try {
+        const userObject = JSON.parse(currentUser);
+        setLoginUser(userObject.username1);
+        setLoginUserImage(userObject.profilepic);
+      } catch (error) {
+        console.error('Error parsing CurrentUser cookie:', error);
+      }
+    }
+  }, []);
+
+
   useEffect(() => {
     const fetchActiveChats = async () => {
       try {
@@ -42,49 +66,49 @@ function ChatApp() {
     fetchActiveChats();
   }, []);
 
-  // Fetch chat messages when a specific chat is selected
   const fetchChatMessages = async (receiver) => {
-    try {
-      const response = await axios.get(`http://localhost:8000/api/getChats/${receiver}/10`, {
-        withCredentials: true,
-      });
-      const { statusCode, data } = response.data;
-      if (statusCode === 200) {
-        const existingChat = data.existingChat;
-        setMessages(existingChat.messages);
-        setFriendUsername(existingChat.participants[0].username); // Assuming first participant is the friend
-      } else {
-        console.error('Failed to fetch messages for the chat');
+    if (fetchTimeout.current) clearTimeout(fetchTimeout.current);
+    fetchTimeout.current = setTimeout(async () => {
+      try {
+        const response = await axios.get(`http://localhost:8000/api/getChats/${receiver}/10`, {
+          withCredentials: true,
+        });
+        const { statusCode, data } = response.data;
+        console.log(LoginUser)
+        if (statusCode === 200) {
+          const existingChat = data.existingChat;
+          setMessages(existingChat.messages);
+        } else {
+          console.error('Failed to fetch messages for the chat');
+          setMessages([]);
+        }
+      } catch (error) {
+        console.error('Error fetching chat messages:', error);
         setMessages([]);
       }
-    } catch (error) {
-      console.error('Error fetching chat messages:', error);
-      setMessages([]);
-    }
+    }, 500);
   };
 
   const handleSelectChat = (username) => {
     setSelectedChat(username);
-    setMessages([]); // Clear previous messages while loading new ones
-    fetchChatMessages(username); // Load the previous messages for the selected chat
+    setMessages([]);
+    fetchChatMessages(username);
+    handleActiveStatus();
   };
 
   const sendMessage = async () => {
     if (message.trim() && selectedChat) {
-      // Emit the message through socket
       socket.emit('send_message', { friendUsername: selectedChat, message, timestamp: new Date().toISOString() });
 
-      // Optimistically add the sent message to UI
       setMessages((prevMessages) => [
         ...prevMessages,
         {
-          sender: { username: 'you' },
+          sender: { username: LoginUser },
           message,
           timestamp: new Date().toISOString(),
         },
       ]);
 
-      // Send the message to the database to update the conversation
       try {
         console.log('Saving message to database...');
         const response = await axios.post('http://localhost:8000/api/saveChats', {
@@ -92,6 +116,7 @@ function ChatApp() {
           message,
           timestamp: new Date().toISOString(),
         }, { withCredentials: true });
+        setMessage('');
 
         if (response.data.statusCode === 200) {
           console.log('Message saved to database');
@@ -101,8 +126,6 @@ function ChatApp() {
       } catch (error) {
         console.error('Error saving message to database:', error);
       }
-
-      setMessage(''); // Clear the input field
     } else {
       console.error('Message or selected chat is missing');
     }
@@ -129,7 +152,6 @@ function ChatApp() {
     }
   };
 
-  // Listen for incoming messages and typing events
   useEffect(() => {
     socket.on('message', (data) => {
       if (data.sendername === selectedChat) {
@@ -195,7 +217,7 @@ function ChatApp() {
           ))}
         </ul>
       </div>
-
+              
       <div className="w-2/3 flex flex-col">
         <div className="p-4 border-b bg-white flex items-center">
           {selectedChat ? (
@@ -213,15 +235,20 @@ function ChatApp() {
             <>
               {(messages || []).map((msg, index) => (
                 <div
+                  className={`chat ${LoginUser==msg.sender.username ? 'chat-end' : 'chat-start'}`}
                   key={index}
-                  className={`p-2 mb-2 rounded-md text-white ${
-                    msg.sender.username === 'you' ? 'bg-blue-500 self-end' : 'bg-green-500 self-start'
-                  }`}
-                  style={{ maxWidth: '70%' }}
                 >
-                  <strong>{msg.sender.username}:</strong> {msg.message}
-                  <div className="text-xs text-gray-300 mt-1">
-                    {moment(msg.timestamp).format('hh:mm A')}
+                  <div className="chat-image avatar">
+                    <div className="w-10 rounded-full">
+                      <img alt={msg.sender.username} src={msg.sender.profilePic || LoginUserImage} />
+                    </div>
+                  </div>
+                  <div className="chat-header">
+                    {msg.sender.username}
+                    <time className="text-xs opacity-50 ml-2">{moment(msg.timestamp).format('hh:mm A')}</time>
+                  </div>
+                  <div id={msg._id} className={`chat-bubble text-white ${LoginUser == msg.sender.username ? 'bg-blue-500' : 'bg-green-500'}`}>
+                    {msg.message}
                   </div>
                 </div>
               ))}
@@ -235,7 +262,7 @@ function ChatApp() {
           ) : (
             <div className="text-gray-500 italic">No chat selected</div>
           )}
-        </div>
+        </div> 
 
         {selectedChat && (
           <div className="p-4 border-t bg-white flex gap-2">

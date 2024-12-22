@@ -2,6 +2,7 @@ import React, { useState, useCallback } from "react";
 import axios from "axios";
 import { debounce } from "lodash";
 
+
 const SearchUser = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -95,7 +96,7 @@ const SearchUser = () => {
   const handleStartChat = async (receiver) => {
     console.log("Starting chat with:", receiver);
     
-    const initialMessage = encodeURIComponent("Welcome to the database chat!");
+    const initialMessage = encodeURIComponent("Welcome to the free and openSource! chat app");
   
     try {
       const { data } = await axios.get(
@@ -215,6 +216,7 @@ const SearchUser = () => {
               Start Chat
             </button>
           </div>
+          
         </div>
       )}
     </div>
