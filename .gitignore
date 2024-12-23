@@ -121,3 +121,4 @@ dist
 realtimeChat/backend/temp/profileimg/char.webp.webp
 .gitignore
 realtimeChat/backend/temp/profileimg/char.webp.webp
+realtimeChat/backend/.gitignore

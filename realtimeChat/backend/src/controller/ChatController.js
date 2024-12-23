@@ -368,6 +368,44 @@ const createChatDatabase = asyncHandler(async (req, res) => {
       })
     );
   });
+
+  const handelLocalStorage=asyncHandler(async (req,res)=>{
+    const username=req.user.username
+    const size=req.params.size || 10
+
+    if(!username){
+        return res.send(
+            new ApiResponse(400,'Invalid cookie or user not found in database')
+        )
+    }
+    
+    const user = await User.findOne({ username })
+      .populate({
+        path: 'activeChats',
+        populate: {
+          path: 'participants',
+          select: 'username profilePic -_id',
+        },
+      })
+      .populate({
+        path: 'activeChats',
+        populate: {
+          path: 'messages',
+          options: { slice: [0, size] },
+          populate: {
+            path: 'sender',
+            select: 'username -_id',
+          },
+        },
+      });
+    
+    console.log(user)
+
+    res.send(
+        new ApiResponse(200,'response',user.activeChats)
+    )
+  })
+  
   
 
 export { 
@@ -381,5 +419,6 @@ export {
     getActiveChats,
     saveChats,
     getChats,
-    validateAllActiveChats
+    validateAllActiveChats,
+    handelLocalStorage
  };

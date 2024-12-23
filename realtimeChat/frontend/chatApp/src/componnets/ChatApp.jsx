@@ -14,14 +14,81 @@ function ChatApp() {
   const [messages, setMessages] = useState([]);
   const [activeChats, setActiveChats] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
-  const [typing, setTyping] = useState(false);
+  const [Amityping, setAmiTyping] = useState(false);
   const chatContainerRef = useRef(null);
   const [LoginUser, setLoginUser] = useState(null);
   const [LoginUserImage, setLoginUserImage] = useState(null);
   const [isActive, setIsActive] = useState(false); 
+  const [typing, setTyping] = useState(false);
+  const [localdata,setLocaldata]=useState(null);
   let typingTimeout = useRef(null);
   let debounceTimer = useRef(null);
   let fetchTimeout = useRef(null);
+  const [chats, setChats] = useState([]);
+
+
+  const storeChatsInSessionStorage = (chats) => {
+    try {
+      sessionStorage.setItem('chats', JSON.stringify(chats));  
+      console.log('Chats stored in session storage:', JSON.parse(sessionStorage.getItem('chats')));
+    } catch (error) {
+      console.error('Error storing chats in session storage:', error);
+    }
+  };
+  
+  const getChatsFromSessionStorage = () => {
+    try {
+      const chats = JSON.parse(sessionStorage.getItem('chats')); 
+      if (!chats || !Array.isArray(chats)) {
+        console.log('No chats found in session storage.');
+        return [];
+      }
+      return chats;
+    } catch (error) {
+      console.error('Error retrieving chats from session storage:', error);
+      return [];
+    }
+  };
+
+  const saveMessageLocally=(receiver,message,sender)=>{
+    console.log(chats)
+    chats.map((chat)=>{
+      chat.participants.map((participant)=>{
+        if(participant.username === receiver){
+          chat.messages.push({
+            message:message,
+            timestamp:new Date().toISOString(),
+            sender:{'username':sender}
+          })}
+      })
+    })
+  }
+
+  useEffect(() => {
+    const fetchChats = async () => {
+      try {
+        const res = await axios.get('http://localhost:8000/api/localStorage/10', {
+          withCredentials: true,
+        });
+        const response = res.data;
+        console.log('Response:', response.data);
+        storeChatsInSessionStorage(response.data);
+        setLocaldata(response.data); 
+      } catch (error) {
+        console.error('Error fetching chats:', error);
+      }
+    };
+
+    fetchChats();
+    const data=getChatsFromSessionStorage()
+    data.map((chat)=>{
+      console.log(chat)
+      chat.messages.map((msg)=>{
+        console.log(msg)
+      })
+    })
+    console.log(localdata)
+  }, []);
 
   const handleActiveStatus = () => {
     if (!isActive) {
@@ -66,33 +133,17 @@ function ChatApp() {
     fetchActiveChats();
   }, []);
 
-  const fetchChatMessages = async (receiver) => {
-    if (fetchTimeout.current) clearTimeout(fetchTimeout.current);
-    fetchTimeout.current = setTimeout(async () => {
-      try {
-        const response = await axios.get(`http://localhost:8000/api/getChats/${receiver}/10`, {
-          withCredentials: true,
-        });
-        const { statusCode, data } = response.data;
-        console.log(LoginUser)
-        if (statusCode === 200) {
-          const existingChat = data.existingChat;
-          setMessages(existingChat.messages);
-        } else {
-          console.error('Failed to fetch messages for the chat');
-          setMessages([]);
-        }
-      } catch (error) {
-        console.error('Error fetching chat messages:', error);
-        setMessages([]);
-      }
-    }, 500);
-  };
+ 
 
-  const handleSelectChat = (username) => {
+  const handleSelectChat = (username,messages,chatid,chatterImg) => {
     setSelectedChat(username);
-    setMessages([]);
-    fetchChatMessages(username);
+    console.log(messages,chatid,chatterImg,username)
+    setChats({
+      'username':username,
+      'messages':messages,
+      'chatid':chatid,
+      'chatterImg':chatterImg
+    })
     handleActiveStatus();
   };
 
@@ -100,14 +151,7 @@ function ChatApp() {
     if (message.trim() && selectedChat) {
       socket.emit('send_message', { friendUsername: selectedChat, message, timestamp: new Date().toISOString() });
 
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          sender: { username: LoginUser },
-          message,
-          timestamp: new Date().toISOString(),
-        },
-      ]);
+      saveMessageLocally(selectedChat,message,LoginUser)
 
       try {
         console.log('Saving message to database...');
@@ -134,16 +178,25 @@ function ChatApp() {
   const handleTyping = (e) => {
     const newMessage = e.target.value;
     setMessage(newMessage);
-
+  
     clearTimeout(debounceTimer.current);
-    debounceTimer.current = setTimeout(() => {
+  
+   
+    if (!Amityping) {
+      setAmiTyping(true); 
       socket.emit('typing', { friendUsername: selectedChat });
+    }
+  
+    debounceTimer.current = setTimeout(() => {
+      clearTimeout(typingTimeout.current);
+  
+      typingTimeout.current = setTimeout(() => {
+        if (Amityping) {
+          setAmiTyping(false);
+          socket.emit('stop_typing', { friendUsername: selectedChat });
+        }
+      }, 1300);
     }, 200);
-
-    clearTimeout(typingTimeout.current);
-    typingTimeout.current = setTimeout(() => {
-      socket.emit('stop_typing', { friendUsername: selectedChat });
-    }, 1500);
   };
 
   const scrollToBottom = () => {
@@ -196,33 +249,43 @@ function ChatApp() {
           <h1 className="text-xl font-bold">Chats</h1>
         </div>
         <ul className="overflow-y-auto h-full">
-          {(activeChats || []).map((chat) => (
-            <li
-              key={chat.chatId}
-              className={`p-4 cursor-pointer hover:bg-gray-200 ${selectedChat === chat.participants[0].username ? 'bg-blue-100' : ''}`}
-              onClick={() => handleSelectChat(chat.participants[0].username)}
-            >
-              <div className="flex items-center gap-4">
-                <img
-                  src={chat.participants[0].profilePic || '/default-avatar.png'}
-                  alt="Profile"
-                  className="w-10 h-10 rounded-full"
-                />
-                <div>
-                  <div className="font-bold">{chat.participants[0].username}</div>
-                  <div className="text-sm text-gray-500">Last message preview...</div>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-              
+  {(localdata || []).map((chat, index) => {
+    const otherParticipant = chat.participants.find(
+      (participant) => participant.username !== LoginUser
+    );
+    const isSelected = selectedChat === otherParticipant?.username;
+    const latestMessage = chat.messages.length > 0 
+      ? chat.messages[chat.messages.length - 1].message 
+      : 'prev chat view';
+
+    return (
+      <li
+        key={chat._id}
+        className={`p-4 cursor-pointer hover:bg-gray-200 ${isSelected ? 'bg-blue-100' : ''}`}
+        onClick={() => handleSelectChat(otherParticipant?.username,chat.messages,chat._id,otherParticipant?.profilePic)}
+      >
+        <div className="flex items-center gap-4">
+          <img
+            src={otherParticipant?.profilePic || '/default-avatar.png'}
+            alt="Profile"
+            className="w-10 h-10 rounded-full"
+          />
+          <div>
+            <div className="font-bold">{otherParticipant?.username}</div>
+            <div className="text-sm text-gray-500">{latestMessage || 'prev chat view'}</div>
+          </div>
+        </div>
+      </li>
+    );
+  })}
+</ul>
+
+      </div>   
       <div className="w-2/3 flex flex-col">
         <div className="p-4 border-b bg-white flex items-center">
-          {selectedChat ? (
+          {selectedChat && chats ? (
             <div>
-              <h2 className="text-lg font-bold">{selectedChat}</h2>
+              <h2 className="text-lg font-bold">{chats.username}</h2>
               <p className="text-sm text-gray-500">Online</p>
             </div>
           ) : (
@@ -230,28 +293,41 @@ function ChatApp() {
           )}
         </div>
 
+
         <div className="flex-grow p-4 overflow-y-auto bg-gray-50" ref={chatContainerRef}>
-          {selectedChat ? (
+          {chats ? (
             <>
-              {(messages || []).map((msg, index) => (
-                <div
-                  className={`chat ${LoginUser==msg.sender.username ? 'chat-end' : 'chat-start'}`}
-                  key={index}
-                >
-                  <div className="chat-image avatar">
-                    <div className="w-10 rounded-full">
-                      <img alt={msg.sender.username} src={msg.sender.profilePic || LoginUserImage} />
-                    </div>
-                  </div>
-                  <div className="chat-header">
-                    {msg.sender.username}
-                    <time className="text-xs opacity-50 ml-2">{moment(msg.timestamp).format('hh:mm A')}</time>
-                  </div>
-                  <div id={msg._id} className={`chat-bubble text-white ${LoginUser == msg.sender.username ? 'bg-blue-500' : 'bg-green-500'}`}>
-                    {msg.message}
-                  </div>
-                </div>
-              ))}
+          {(chats.messages || []).map((msg, index) => (
+        <div
+        className={`chat ${LoginUser === msg.sender.username ? 'chat-end' : 'chat-start'}`}
+        key={msg._id}
+      >
+        <div className="chat-image avatar">
+          <div className="w-10 rounded-full">
+           <img
+             alt={msg.sender.username}
+             src={
+             msg.sender.username !== LoginUser
+                ? chats.chatterImg
+                : LoginUserImage
+            }
+          />
+        </div>
+      </div>
+         <div className="chat-header">
+        {msg.sender.username}
+         <time className="text-xs opacity-50 ml-2">{moment(msg.timestamp).format('hh:mm A')}</time>
+      </div>
+      <div
+      id={msg._id}
+      className={`chat-bubble text-white ${
+        LoginUser === msg.sender.username ? 'bg-blue-500' : 'bg-green-500'
+          }`}
+       >
+          {msg.message}
+       </div>
+        </div>
+          ))}
               {typing && (
                 <div className="flex items-center">
                   <span className="loading loading-dots loading-sm"></span>

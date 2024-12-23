@@ -283,7 +283,7 @@ const handleUpload = asyncHandler(async (req, res) => {
 
   const aifunctionCalling=asyncHandler ( async (req,res)=>{
     const {usrQuery,city}=req.body;
-
+        
   })
 
 

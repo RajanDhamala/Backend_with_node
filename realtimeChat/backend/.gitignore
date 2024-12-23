@@ -119,3 +119,6 @@ dist
 .temp
 .png
 .jpg
+
+
+Dockerfile
