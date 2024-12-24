@@ -47,15 +47,17 @@ function handleSocketConnection(io) {
                 io.to(socket.id).emit('unauthorized-room-join', { friendUsername });
             }
         });
-
-        socket.on('send_message', async ({ friendUsername, message, timestamp }) => {
-            const recipientSocketId = users[friendUsername];
-            if (!friendUsername || !message) {
-                return;
-            }
-            console.log(`Message from ${username} to ${friendUsername}: ${message} ${timestamp}`);
-            io.to(recipientSocketId).emit('message', { 'sendername': username, message, 'timestamp': timestamp });
-        });
+ socket.on('send_message', ({ friendUsername, message, timestamp }) => {
+    const recipientSocketId = users[friendUsername];
+    if (recipientSocketId) {
+      io.to(recipientSocketId).emit('message', {
+        sendername:username,
+        receiver: friendUsername,
+        message,
+        timestamp,
+      });
+    }
+  });
 
         socket.on('typing', async ({ friendUsername }) => {
             const recipientSocketId = users[friendUsername];
@@ -81,7 +83,7 @@ function handleSocketConnection(io) {
                 delete users[username]; 
             }
             console.log(users);
-
+            socket.broadcast.emit('stop_typing', { sendername: username });
             if (username) {
                 try {
                     const usr = await User.findOneAndUpdate(

@@ -9,6 +9,12 @@ import UploadPfp from '../middleware/MulterpfpUpload.js'
 
 const route=express.Router();
 
+route.get('/',(req,res)=>{
+   res.send(
+  'welcome to realtime chat application'
+   )
+})
+
 route.post("/register",registerUser);
 route.post("/login",LoginUser);
 

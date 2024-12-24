@@ -369,16 +369,16 @@ const createChatDatabase = asyncHandler(async (req, res) => {
     );
   });
 
-  const handelLocalStorage=asyncHandler(async (req,res)=>{
-    const username=req.user.username
-    const size=req.params.size || 10
-
-    if(!username){
-        return res.send(
-            new ApiResponse(400,'Invalid cookie or user not found in database')
-        )
+  const handelLocalStorage = asyncHandler(async (req, res) => {
+    const username = req.user.username;
+    const size = parseInt(req.params.size) || 10; // Default size of 10
+  
+    if (!username) {
+      return res.send(
+        new ApiResponse(400, 'Invalid cookie or user not found in database')
+      );
     }
-    
+  
     const user = await User.findOne({ username })
       .populate({
         path: 'activeChats',
@@ -391,22 +391,35 @@ const createChatDatabase = asyncHandler(async (req, res) => {
         path: 'activeChats',
         populate: {
           path: 'messages',
-          options: { slice: [0, size] },
+          options: {
+            sort: { timestamp: -1 },
+          },
           populate: {
             path: 'sender',
             select: 'username -_id',
           },
         },
       });
+  
+    if (!user) {
+      return res.send(
+        new ApiResponse(404, 'User not found')
+      );
+    }
+  
     
-    console.log(user)
-
+    user.activeChats.forEach(chat => {
+      if (chat.messages && chat.messages.length > size) {
+        chat.messages.reverse(); 
+        chat.messages = chat.messages.slice(0, size);
+        chat.messages.reverse();
+      }
+    });
+  
     res.send(
-        new ApiResponse(200,'response',user.activeChats)
-    )
-  })
-  
-  
+      new ApiResponse(200, 'Chats and messages retrieved successfully', user.activeChats)
+    );
+  });
 
 export { 
     SendMessageRequest,
