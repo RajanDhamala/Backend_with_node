@@ -18,7 +18,7 @@ function UserProfile() {
     e.preventDefault();
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/friendsList/${username}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/friendsList/${username}`,
         { withCredentials: true }
       );
       setFriendsList(res.data.data);
@@ -31,7 +31,7 @@ function UserProfile() {
 const handelAcceptReject = (username, action) => {
   console.log('Action:', action, 'Username:', username); 
   axios.post(
-      `http://localhost:8000/api/friend-request/${action}/${username}`,
+      `${import.meta.env.VITE_API_BASE_URL}/api/friend-request/${action}/${username}`,
       {}, 
       { withCredentials: true } 
   )
@@ -44,7 +44,7 @@ const handelAcceptReject = (username, action) => {
   });
 };
   const callRequestApi=()=>{
-    axios.get("http://localhost:8000/api/requestList", { withCredentials: true })
+    axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/requestList`, { withCredentials: true })
     .then((response)=>{
       const data=(response.data.data.friendRequests);
       setFriendRequests(data)
@@ -57,7 +57,7 @@ const handelAcceptReject = (username, action) => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/UserProfile", { withCredentials: true })
+      .get(`${import.meta.env.VITE_API_BASE_URL}/api/UserProfile`, { withCredentials: true })
       .then((response) => {
         setUserData(response.data.data);
         console.log(response.data.data);

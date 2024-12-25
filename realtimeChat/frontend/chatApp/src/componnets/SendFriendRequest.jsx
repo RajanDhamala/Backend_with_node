@@ -20,7 +20,7 @@ const SendFriendRequest = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/sendRequest", 
+        `${import.meta.env.VITE_API_BASE_URL}/api/sendRequest`, 
         { receiverName },
         {
           withCredentials: true,
@@ -46,7 +46,7 @@ const SendFriendRequest = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/setPfp", 
+        `${import.meta.env.VITE_API_BASE_URL}/api/setPfp`, 
         formData,
         {
           withCredentials: true,

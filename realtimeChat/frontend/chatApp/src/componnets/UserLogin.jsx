@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import axios from "axios";
+
 
 function UserLogin() {
   const [email, setEmail] = useState("");
@@ -7,13 +8,18 @@ function UserLogin() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    console.log("UserLogin component mounted");
+    console.log(import.meta.env.VITE_API_BASE_URL);
+  }, []);
+
   const handleLogin = (e) => {
     e.preventDefault();
     setLoading(true); 
     setMessage(""); 
     axios
       .post(
-        "http://localhost:8000/api/login",
+       `${import.meta.env.VITE_API_BASE_URL}/api/login`,
         {
           email,
           password,

@@ -4,14 +4,13 @@ import io from 'socket.io-client';
 import moment from 'moment';
 import Cookies from 'js-cookie';
 
-const socket = io('http://localhost:8000', {
+const socket = io(`${import.meta.env.VITE_API_BASE_URL}`, {
   withCredentials: true,
 });
 
 function ChatApp() {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
-  const [activeChats, setActiveChats] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
   const [Amityping, setAmiTyping] = useState(false);
   const chatContainerRef = useRef(null);
@@ -22,19 +21,19 @@ function ChatApp() {
   const [localdata, setLocaldata] = useState(null);
   let typingTimeout = useRef(null);
   let debounceTimer = useRef(null);
-  const [chats, setChats] = useState([]);
+  const [chats, setChats] = useState(null);
 
-  const storeChatsInSessionStorage = (chats,username) => {
+  const storeChatsInSessionStorage = (chatId, messages) => {
     try {
-      sessionStorage.setItem(`ChatsWith${username}`, JSON.stringify(chats));  
+      sessionStorage.setItem(`Chat_${chatId}`, JSON.stringify(messages));
     } catch (error) {
       console.error('Error storing chats in session storage:', error);
     }
   };
 
-  const getChatsFromSessionStorage = () => {
+  const getChatsFromSessionStorage = (chatId) => {
     try {
-      const chats = JSON.parse(sessionStorage.getItem(`ChatsWith${username}`)); 
+      const chats = JSON.parse(sessionStorage.getItem(`Chat_${chatId}`));
       if (!chats || !Array.isArray(chats)) return [];
       return chats;
     } catch (error) {
@@ -43,34 +42,64 @@ function ChatApp() {
     }
   };
 
-  const saveMessageLocally = (receiver, message, sender) => {
-    chats.messages.push({
-      message: message,
-      sender: { username: sender },
-      timestamp: new Date().toISOString(),
-      id: chats.messages.length + 1,
-    });
-    setMessages([...chats.messages]);
-    storeChatsInSessionStorage(chats); 
+  const saveMessageLocally = (chatId, message, sender) => {
+    const storedChats = getChatsFromSessionStorage(chatId);
+    const updatedMessages = [
+      ...storedChats,
+      {
+        sender: { username: sender },
+        message,
+        timestamp: new Date().toISOString(),
+        id: storedChats.length + 1,
+      },
+    ];
+    setMessages(updatedMessages);
+    storeChatsInSessionStorage(chatId, updatedMessages);
   };
 
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const res = await axios.get('http://localhost:8000/api/localStorage/10', {
+        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/localStorage/10`, {
           withCredentials: true,
         });
-        storeChatsInSessionStorage(res.data.data);
-        setLocaldata(res.data.data); 
+        res.data.data.forEach((chat) => {
+          storeChatsInSessionStorage(chat._id, chat.messages);
+        });
+        setLocaldata(res.data.data);
       } catch (error) {
         console.error('Error fetching chats:', error);
       }
     };
 
     fetchChats();
-    const data = getChatsFromSessionStorage();
-    if (data) setLocaldata(data);
+  }, [LoginUser]);
+
+  useEffect(() => {
+    const currentUser = Cookies.get('CurrentUser');
+    if (currentUser) {
+      try {
+        const userObject = JSON.parse(currentUser);
+        setLoginUser(userObject.username1 || 'Guest');
+        setLoginUserImage(userObject.profilepic || '/default-avatar.png');
+      } catch (error) {
+        console.error('Error parsing CurrentUser cookie:', error);
+      }
+    }
   }, []);
+
+  const handleSelectChat = (username, messages, chatId, chatterImg) => {
+    setSelectedChat(username);
+    const storedChats = getChatsFromSessionStorage(chatId);
+    setChats({
+      username,
+      messages: storedChats.length > 0 ? storedChats : messages,
+      chatId,
+      chatterImg: chatterImg || '/default-avatar.png',
+    });
+    handleActiveStatus();
+    scrollToBottom();
+  };
 
   const handleActiveStatus = () => {
     if (!isActive) {
@@ -79,40 +108,23 @@ function ChatApp() {
     }
   };
 
-  useEffect(() => {
-    const currentUser = Cookies.get('CurrentUser');
-    if (currentUser) {
-      try {
-        const userObject = JSON.parse(currentUser);
-        setLoginUser(userObject.username1);
-        setLoginUserImage(userObject.profilepic);
-      } catch (error) {
-        console.error('Error parsing CurrentUser cookie:', error);
-      }
-    }
-  }, []);
-
-  const handleSelectChat = (username, messages, chatid, chatterImg) => {
-    setSelectedChat(username);
-    setChats({
-      username: username,
-      messages: messages,
-      chatid: chatid,
-      chatterImg: chatterImg,
-    });
-    handleActiveStatus();
-    scrollToBottom(); 
-  };
-
   const sendMessage = async () => {
-    if (message.trim() && selectedChat) {
-      socket.emit('send_message', { friendUsername: selectedChat, message, timestamp: new Date().toISOString() });
-      saveMessageLocally(selectedChat, message, LoginUser);
+    if (message.trim() && selectedChat && chats?.chatId) {
+      socket.emit('send_message', { friendUsername: selectedChat, message, timestamp: new Date().toISOString(),chatId: chats.chatId });
+      saveMessageLocally(chats.chatId, message, LoginUser);
+      setChats((prevChats) => {
+        if (!prevChats) return null;
+        return {
+          ...prevChats,
+          messages: [...prevChats.messages, { sender: { username: LoginUser }, message, timestamp: new Date().toISOString() }],
+        };
+      })
 
       try {
         const response = await axios.post(
-          'http://localhost:8000/api/saveChats',
+          `${import.meta.env.VITE_API_BASE_URL}/api/saveChats`,
           {
+            chatId: chats.chatId,
             receiver: selectedChat,
             message,
             timestamp: new Date().toISOString(),
@@ -121,7 +133,6 @@ function ChatApp() {
         );
         setMessage('');
         console.log('Message saved to database:', response.data);
-        if (response.data.statusCode !== 200) console.error('Failed to save message to database');
       } catch (error) {
         console.error('Error saving message to database:', error);
       }
@@ -135,7 +146,7 @@ function ChatApp() {
     clearTimeout(debounceTimer.current);
 
     if (!Amityping) {
-      setAmiTyping(true); 
+      setAmiTyping(true);
       socket.emit('typing', { friendUsername: selectedChat });
     }
 
@@ -162,24 +173,26 @@ function ChatApp() {
     }
   };
 
-  const isLink = (message) => {
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    return urlRegex.test(message);
-  };
-
-  const renderMessage = (message) => {
-    if (isLink(message)) {
-      return <a href={message} target="_blank" rel="noopener noreferrer" className="text-white break-words underline text-sm">{message}</a>;
-    }
-    return message;
-  };
-
   useEffect(() => {
     socket.on('message', (data) => {
-      if (data.sendername !== LoginUser) {
-        console.log('Message received:', data);
-        saveMessageLocally(data.sendername, data.message, data.sendername);
+      if (data.sendername !== LoginUser && data.chatId === chats?.chatId) {
+        console.log('Message received and user seeing it:', data);
+        saveMessageLocally(data.chatId, data.message, data.sendername);
+        setChats((prevChats) => {
+          if (!prevChats) return null;
+          return {
+            ...prevChats,
+            messages: [...prevChats.messages, { sender: { username: data.sendername }, message: data.message, timestamp: new Date().toISOString() }],
+          };
+        });
         scrollToBottom();
+      }else if(data.sendername!==LoginUser && data.chatId !== chats?.chatId){
+        console.log('Message received but user not seeing it:', data);
+        saveMessageLocally(data.chatId, data.message, data.sendername);
+
+      }else{
+        console.log('Message sent:', data);
+        return ;
       }
     });
 
@@ -196,11 +209,23 @@ function ChatApp() {
       socket.off('typing');
       socket.off('stop_typing');
     };
-  }, [selectedChat, LoginUser]);
+  }, [selectedChat, chats, LoginUser]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages, selectedChat]);
+
+  const isLink = (message) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return urlRegex.test(message);
+  };
+
+  const renderMessage = (message) => {
+    if (isLink(message)) {
+      return <a href={message} target="_blank" rel="noopener noreferrer" className="text-white break-words underline text-sm">{message}</a>;
+    }
+    return message;
+  };
 
   return (
     <div className="flex h-screen">
@@ -211,25 +236,26 @@ function ChatApp() {
         <ul className="overflow-y-auto h-full">
           {(localdata || []).map((chat) => {
             const otherParticipant = chat.participants.find(
-              (participant) => participant.username !== LoginUser
+              (participant) => participant?.username !== LoginUser
             );
-            const isSelected = selectedChat === otherParticipant?.username;
+            if (!otherParticipant) return null;
+            const isSelected = selectedChat === otherParticipant.username;
             const latestMessage = chat.messages[chat.messages.length - 1]?.message || 'prev chat view';
 
             return (
               <li
                 key={chat._id}
                 className={`p-4 cursor-pointer hover:bg-gray-200 ${isSelected ? 'bg-blue-100' : ''}`}
-                onClick={() => handleSelectChat(otherParticipant?.username, chat.messages, chat._id, otherParticipant?.profilePic)}
+                onClick={() => handleSelectChat(otherParticipant.username, chat.messages, chat._id, otherParticipant.profilePic)}
               >
                 <div className="flex items-center gap-4">
                   <img
-                    src={otherParticipant?.profilePic || '/default-avatar.png'}
+                    src={otherParticipant.profilePic || '/default-avatar.png'}
                     alt="Profile"
                     className="w-10 h-10 rounded-full"
                   />
                   <div>
-                    <div className="font-bold">{otherParticipant?.username}</div>
+                    <div className="font-bold">{otherParticipant.username}</div>
                     <div className="text-sm text-gray-500">{latestMessage}</div>
                   </div>
                 </div>
@@ -237,7 +263,7 @@ function ChatApp() {
             );
           })}
         </ul>
-      </div>   
+      </div>
       <div className="w-2/3 flex flex-col">
         <div className="p-4 border-b bg-white flex items-center">
           {selectedChat && chats ? (
@@ -249,7 +275,6 @@ function ChatApp() {
             <h2 className="text-lg font-bold">Select a chat</h2>
           )}
         </div>
-
         <div className="flex-grow p-4 overflow-y-auto bg-gray-50" ref={chatContainerRef}>
           {chats ? (
             <>
@@ -288,7 +313,6 @@ function ChatApp() {
             <div className="text-gray-500 italic">No chat selected</div>
           )}
         </div>
-
         {selectedChat && (
           <div className="p-4 border-t bg-white flex gap-2">
             <input

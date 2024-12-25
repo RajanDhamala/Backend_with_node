@@ -12,7 +12,7 @@ const OtpComponent = () => {
   const handleOtpRequest = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:8000/api/OtpRequest", {
+      const response = await axios.get( `${import.meta.env.VITE_API_BASE_URL}/api/OtpRequest`, {
         withCredentials: true, 
       });
       setMessage(response.data.message || "OTP sent to your email.");
@@ -28,7 +28,7 @@ const OtpComponent = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/OtpVerification",
+        `${import.meta.env.VITE_API_BASE_URL}/api/OtpVerification`,
         { otp },
         {
           withCredentials: true, 

@@ -8,7 +8,7 @@ function UserProfile() {
 
   useEffect(() => {
     axios
-      .get('http://localhost:8000/api/UserProfile', { withCredentials: true })
+      .get(`${import.meta.env.VITE_API_BASE_URL}/api/UserProfile`, { withCredentials: true })
       .then((response) => {
         setUserData(response.data.data); 
         console.log(response.data);

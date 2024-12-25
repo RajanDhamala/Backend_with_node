@@ -13,7 +13,7 @@ const UserRegister = () => {
     setLoading(true);
     setMessage("");
     axios
-      .post("http://localhost:8000/api/register", {
+      .post(`${import.meta.env.VITE_API_BASE_URL}/api/register`, {
         username: username,
         password: password,
         email: email,

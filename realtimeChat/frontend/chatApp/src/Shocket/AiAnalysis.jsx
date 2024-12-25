@@ -4,8 +4,8 @@ import axios from 'axios';
 function AiAnalysis() {
   const [prompt, setPrompt] = useState('');
   const [image, setImage] = useState(null);
-  const [results, setResults] = useState([]); // Store AI analysis results
-  const [loading, setLoading] = useState(false); // Handle loading state
+  const [results, setResults] = useState([]); 
+  const [loading, setLoading] = useState(false); 
 
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
@@ -18,20 +18,20 @@ function AiAnalysis() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setResults([]); // Clear previous results
+    setResults([]); 
 
     const formData = new FormData();
     formData.append('imgToAnalysis', image);
     formData.append('prompt', prompt);
 
     try {
-      const response = await axios.post('http://localhost:8000/api/aiImg', formData, {
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/aiImg`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      setResults(response.data.data); // Set results from API response
+      setResults(response.data.data); 
     } catch (error) {
       console.error('Error uploading:', error);
     } finally {

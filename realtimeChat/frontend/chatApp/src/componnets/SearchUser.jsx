@@ -22,7 +22,7 @@ const SearchUser = () => {
 
       try {
         const { data } = await axios.post(
-          `http://localhost:8000/api/searchUser`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/searchUser`,
           { search: query },
           { withCredentials: true }
         );
@@ -57,7 +57,7 @@ const SearchUser = () => {
 
   const handleProfileClick = async (username) => {
     try {
-      const { data } = await axios.get(`http://localhost:8000/api/getProfile/${username}`, {
+      const { data } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/getProfile/${username}`, {
         withCredentials: true,
       });
 
@@ -77,7 +77,7 @@ const SearchUser = () => {
     try {
       
       const { data } = await axios.post(
-        `http://localhost:8000/api/sendRequest`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/sendRequest`,
         { receiverName },
         { withCredentials: true }
       );
@@ -100,7 +100,7 @@ const SearchUser = () => {
   
     try {
       const { data } = await axios.get(
-        `http://localhost:8000/api/chat/${receiver}/${initialMessage}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/chat/${receiver}/${initialMessage}`,
         { withCredentials: true }
       );
       if (data.statusCode === 201) {
