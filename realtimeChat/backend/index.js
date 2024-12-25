@@ -10,7 +10,9 @@ connectDb().then(() => {
   const server = http.createServer(app); 
   const io = new Server(server, {
     cors: {
-      origin: "http://localhost:5173", 
+      origin: [
+        'http://localhost:5173',
+      ], 
       methods: ["GET", "POST"],
       credentials: true,
     },
@@ -28,5 +30,5 @@ connectDb().then(() => {
 });
 
 app.get("/", (req, res) => {
-  res.send("hello world");
+  res.send("hello and welcome to the realtimechat application");
 });

@@ -47,13 +47,14 @@ function handleSocketConnection(io) {
                 io.to(socket.id).emit('unauthorized-room-join', { friendUsername });
             }
         });
- socket.on('send_message', ({ friendUsername, message, timestamp }) => {
+ socket.on('send_message', ({ friendUsername, message, timestamp,chatId }) => {
     const recipientSocketId = users[friendUsername];
     if (recipientSocketId) {
       io.to(recipientSocketId).emit('message', {
-        sendername:username,
-        receiver: friendUsername,
+        'sendername':username,
+        'receivername': friendUsername,
         message,
+        chatId,
         timestamp,
       });
     }
