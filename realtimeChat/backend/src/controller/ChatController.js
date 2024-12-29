@@ -421,6 +421,23 @@ const createChatDatabase = asyncHandler(async (req, res) => {
     );
   });
 
+  const getAllActiveUsers=asyncHandler(async (req,res)=>{
+    const requser=req.user.username
+    console.log('who are u?')
+
+    if (!requser){
+        return res.send(
+            new ApiResponse(400,'user not found in database')
+        )
+    }
+
+    const allusers=await User.find({isActive:true}).select('username profilePic verifiedUser')
+    console.log(allusers)
+    res.send(
+        new ApiResponse(200,'response',allusers)
+    )
+  })
+
 export { 
     SendMessageRequest,
     SeeFriendRequests,
@@ -433,5 +450,6 @@ export {
     saveChats,
     getChats,
     validateAllActiveChats,
-    handelLocalStorage
+    handelLocalStorage,
+    getAllActiveUsers
  };
