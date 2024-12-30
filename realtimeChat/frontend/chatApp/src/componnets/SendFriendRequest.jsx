@@ -115,6 +115,8 @@ const SendFriendRequest = () => {
         </button>
       </form>
 
+  
+
       {message && (
         <p className="mt-4 text-green-600 text-sm text-center">{message}</p>
       )}

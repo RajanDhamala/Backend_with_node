@@ -1,24 +1,35 @@
 import React, { useState } from "react";
 import axios from "axios";
-
-
+import Alert from "../AiComps/Alert"; 
 
 const OtpComponent = () => {
   const [otp, setOtp] = useState("");
-  const [step, setStep] = useState(1); 
+  const [step, setStep] = useState(1);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [alertProps, setAlertProps] = useState(null); 
+
+  const showAlert = (type, title, message) => {
+    setAlertProps({ type, title, message });
+    setTimeout(() => setAlertProps(null), 4000);
+  };
 
   const handleOtpRequest = async () => {
     setLoading(true);
     try {
-      const response = await axios.get( `${import.meta.env.VITE_API_BASE_URL}/api/OtpRequest`, {
-        withCredentials: true, 
-      });
-      setMessage(response.data.message || "OTP sent to your email.");
-      setStep(2); 
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/OtpRequest`,
+        {
+          withCredentials: true,
+        }
+      );
+      setMessage(response.data.message || "OTP sent to your email please check.");
+      showAlert("success", "OTP Sent", response.data.message || "OTP sent to your email.");
+      setStep(2);
     } catch (error) {
-      setMessage(error.response?.data?.message || "Error requesting OTP.");
+      const errorMessage = error.response?.data?.message || "Error requesting OTP.";
+      setMessage(errorMessage);
+      showAlert("error", "OTP Request Failed", errorMessage);
     } finally {
       setLoading(false);
     }
@@ -31,13 +42,16 @@ const OtpComponent = () => {
         `${import.meta.env.VITE_API_BASE_URL}/api/OtpVerification`,
         { otp },
         {
-          withCredentials: true, 
+          withCredentials: true,
         }
       );
       setMessage(response.data.message || "OTP verified successfully.");
-      setStep(1); 
+      showAlert("success", "OTP Verified", response.data.message || "OTP verified successfully.");
+      setStep(1);
     } catch (error) {
-      setMessage(error.response?.data?.message || "Error verifying OTP.");
+      const errorMessage = error.response?.data?.message || "Error verifying OTP.";
+      setMessage(errorMessage);
+      showAlert("error", "OTP Verification Failed", errorMessage);
     } finally {
       setLoading(false);
     }
@@ -45,6 +59,14 @@ const OtpComponent = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      {alertProps && (
+        <Alert
+          type={alertProps.type}
+          title={alertProps.title}
+          message={alertProps.message}
+          onClose={() => setAlertProps(null)}
+        />
+      )}
       <div className="bg-white p-6 rounded shadow-lg w-96">
         <h1 className="text-xl font-semibold text-gray-700 mb-4">
           {step === 1 ? "Request OTP" : "Verify OTP"}
@@ -94,9 +116,6 @@ const OtpComponent = () => {
             {message}
           </div>
         )}
-      </div>
-      <div className="flex justify-center">
-
       </div>
     </div>
   );

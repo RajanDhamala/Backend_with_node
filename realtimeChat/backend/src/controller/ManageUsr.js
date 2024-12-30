@@ -196,6 +196,13 @@ const handleUpload = asyncHandler(async (req, res) => {
 
     const existingUser=await User.findOne({email:req.user.email});
 
+    if(existingUser.verifiedUser){
+      return res.send(
+        new ApiResponse
+        (400,"User already verified",null)
+      )
+    }
+
     const otp=otpGeneration();
     console.log(otp,"Generated OTP: for uer named",existingUser.username);
     try{
