@@ -4,7 +4,7 @@ import {registerUser,LoginUser,LogoutUser,UserProfile,handleUpload,OtpHandeling,
 OtpVerification,handelAi,handelAiImg,aiImgAnalysis,gptJsonResponse,getAllUsers,searchUser,uploadProfilePic, getUserProfile} from '../controller/ManageUsr.js';
 import upload from '../middleware/MulterFileUpload.js';
 import ImageAnalysis from '../middleware/MulterImgAnalysis.js'
-import {SendMessageRequest,SeeFriendRequests,acceptRejectRequest,seeActiveUser,showFriendsList,handelChatInitiation, createChatDatabase, getActiveChats,saveChats,getChats,validateAllActiveChats,handelLocalStorage, getAllActiveUsers} from '../controller/ChatController.js'
+import {SendMessageRequest,SeeFriendRequests,acceptRejectRequest,seeActiveUser,showFriendsList,handelChatInitiation, createChatDatabase, getActiveChats,saveChats,getChats,validateAllActiveChats,handelLocalStorage, getAllActiveUsers,OpenAi} from '../controller/ChatController.js'
 import UploadPfp from '../middleware/MulterpfpUpload.js'
 
 const route=express.Router();
@@ -64,6 +64,7 @@ route.get('/clear',JwtAuthenticate,validateAllActiveChats)
 route.get('/localStorage/:size',JwtAuthenticate,handelLocalStorage)
 
 route.get('/getActiveUsers',JwtAuthenticate,getAllActiveUsers)
+
 
   
 

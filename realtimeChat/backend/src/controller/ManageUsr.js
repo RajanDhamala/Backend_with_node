@@ -219,6 +219,8 @@ const handleUpload = asyncHandler(async (req, res) => {
   const OtpVerification=asyncHandler(async (req,res)=>{
     const {otp}=req.body;
 
+    console.log("OTP:",otp);
+
     const existingUser=await User.findOne({email:req.user.email});
 
     if(!existingUser){
@@ -228,15 +230,26 @@ const handleUpload = asyncHandler(async (req, res) => {
     const isVerified=VerifyOtp(otp);
     const dbCheck=existingUser.UserOtp;
 
-    if(!isVerified && !dbCheck){
-        return res.json(new ApiResponse(400,"Invalid OTP",null));
+
+    console.log("isVerified:",isVerified);
+
+    console.log("DBCheck:",dbCheck);
+
+
+    if(!isVerified){
+      console.log("Invalid OTP");
+        return res.json(new ApiResponse(400,"Invalid OTP",{
+          type:'error'
+        }));
     }
 
     existingUser.verifiedUser=true;
     existingUser.UserOtp=null;
     await existingUser.save();
+    console.log("User verified successfully");
 
-    return res.json(new ApiResponse(200,"User verified successfully",null));
+    return res.json(new ApiResponse(200,"User verified successfully",{
+    type:'success'}));
 
   })
 

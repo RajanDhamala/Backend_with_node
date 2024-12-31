@@ -3,6 +3,10 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 import User from '../models/User.Model.js';
 import  Checkfriedshipfrom from '../utils/ChatUtils.js'
 import Chat from '../models/Group.Model.js';
+import OpenAI from "openai";
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 
 const SendMessageRequest = asyncHandler(async (req, res) => {
@@ -438,6 +442,24 @@ const createChatDatabase = asyncHandler(async (req, res) => {
     )
   })
 
+  const OpenAi=asyncHandler(async (req,res)=>{
+
+    const openai = new OpenAI({
+     apiKey: process.env.OPENAI
+    });
+    
+    const completion = openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      store: true,
+      messages: [
+        {"role": "user", "content": "write a haiku about ai"},
+      ],
+    });
+    
+    completion.then((result) => console.log(result.choices[0].message));
+    
+   })
+
 export { 
     SendMessageRequest,
     SeeFriendRequests,
@@ -451,5 +473,6 @@ export {
     getChats,
     validateAllActiveChats,
     handelLocalStorage,
-    getAllActiveUsers
+    getAllActiveUsers,
+    OpenAi
  };
