@@ -62,6 +62,7 @@ const LoginUser=asyncHandler ( async (req,res)=>{
 
     console.log(email,password);
     const existingUser=await User.findOne({email});
+    console.log("Existing User:",existingUser);
 
     if(!existingUser){
         return res.json(new ApiResponse(400,"User does not exist in database",null));
