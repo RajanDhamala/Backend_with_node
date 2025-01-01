@@ -6,8 +6,17 @@ import upload from '../middleware/MulterFileUpload.js';
 import ImageAnalysis from '../middleware/MulterImgAnalysis.js'
 import {SendMessageRequest,SeeFriendRequests,acceptRejectRequest,seeActiveUser,showFriendsList,handelChatInitiation, createChatDatabase, getActiveChats,saveChats,getChats,validateAllActiveChats,handelLocalStorage, getAllActiveUsers,OpenAi} from '../controller/ChatController.js'
 import UploadPfp from '../middleware/MulterpfpUpload.js'
+import rateLimit from 'express-rate-limit';
 
 const route=express.Router();
+
+const limiter=rateLimit({
+   windowMs: 5 * 60 * 1000,
+   max: 50,
+   message:'please limit ur request',
+   standardHeaders: true,
+   legacyHeaders: false, 
+})
 
 route.get('/',(req,res)=>{
    res.send(
@@ -19,7 +28,7 @@ route.post("/register",registerUser);
 route.post("/login",LoginUser);
 
 route.get('/logout',LogoutUser)
-route.get('/UserProfile',JwtAuthenticate,UserProfile)
+route.get('/UserProfile',limiter,JwtAuthenticate,UserProfile)
 route.post('/UploadProfilePic',JwtAuthenticate,upload.single('ProfilePic'),handleUpload)
 
 route.get('/OtpRequest',JwtAuthenticate,OtpHandeling);

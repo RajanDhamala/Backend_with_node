@@ -18,7 +18,6 @@ const socketJwtMiddleware = async (socket, next) => {
             return next(new Error('Authentication error: No accessToken provided'));
         }
 
-      
         const decoded = jwt.verify(accessToken, process.env.Access_Secret);
         socket.user = decoded; 
         return next(); 

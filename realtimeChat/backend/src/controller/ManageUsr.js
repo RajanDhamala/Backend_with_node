@@ -8,7 +8,6 @@ import {otpGeneration,VerifyOtp} from '../utils/OtpGeneration.js';
 import { sendOtpEmail } from '../utils/OtpGeneration.js';
 import  {handelText, handelImg,AiJsonResponse} from '../utils/handelGeminai.js';
 
-
 const registerUser = asyncHandler(async (req, res) => {
   const { username, email, password, birthDate } = req.body;
   console.log("Request Body:", req.body);
