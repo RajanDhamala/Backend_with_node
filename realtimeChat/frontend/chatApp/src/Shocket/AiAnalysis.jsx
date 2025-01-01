@@ -8,7 +8,7 @@ function AiAnalysis() {
   const [loading, setLoading] = useState(false); 
 
   const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
+    setImage(()=>e.target.files[0]);
   };
 
   const handlePromptChange = (e) => {
@@ -17,7 +17,7 @@ function AiAnalysis() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setLoading(()=>true);
     setResults([]); 
 
     const formData = new FormData();

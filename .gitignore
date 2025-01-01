@@ -122,3 +122,9 @@ realtimeChat/backend/temp/profileimg/char.webp.webp
 .gitignore
 realtimeChat/backend/temp/profileimg/char.webp.webp
 realtimeChat/backend/.gitignore
+realtimeChat/frontend/chatApp/components.json
+realtimeChat/frontend/chatApp/jsconfig.app.json
+realtimeChat/frontend/chatApp/.gitignore
+realtimeChat/frontend/chatApp/.gitignore
+realtimeChat/frontend/chatApp/.gitignore
+.gitignore

@@ -23,3 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 ../../../.gitignore
+AiComps/
+lib/
+profile/
+Alert.jsx
+jsjsconfig.app.json
+jsconfig.json
+components/

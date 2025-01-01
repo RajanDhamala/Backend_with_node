@@ -8,7 +8,7 @@ const Alert = ({
   className = '', 
   onClose, 
   autoClose = true, 
-  duration = 5000 // 5 seconds
+  duration = 5000 
 }) => {
   const alertStyles = {
     success: 'bg-green-600 text-white shadow-lg shadow-green-500/20',
@@ -30,7 +30,7 @@ const Alert = ({
         if (onClose) onClose();
       }, duration);
 
-      return () => clearTimeout(timer); // Cleanup on unmount
+      return () => clearTimeout(timer);
     }
   }, [autoClose, duration, onClose]);
 

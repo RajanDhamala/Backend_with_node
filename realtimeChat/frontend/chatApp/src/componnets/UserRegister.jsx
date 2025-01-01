@@ -1,160 +1,202 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import Alert from '../AiComps/Alert';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { User, Mail, Lock, ArrowRight, Calendar } from 'lucide-react';
+import axios from 'axios';
 
-const UserRegister = () => {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [dob, setDob] = useState("");
-  const [loading, setLoading] = useState(false);
+const RegisterForm = () => {
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    birthDate: '', // Changed from dateOfBirth to birthDate
+    agreeToTerms: false
+  });
+  const [alertProps, setAlertProps] = useState(null);
 
-  const submitForm = () => {
-    setLoading(true);
-    setMessage("");
-    axios
-      .post(`${import.meta.env.VITE_API_BASE_URL}/api/register`, {
-        username: username,
-        password: password,
-        email: email,
-        birthDate: dob,
-      })
-      .then((res) => {
-        setLoading(false);
-        setMessage(res.data.message);
-      })
-      .catch((err) => {
-        setLoading(false);
-        setMessage("An error occurred during registration.");
-        console.error(err);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.username || !formData.email || !formData.password || !formData.birthDate) {
+      setAlertProps({
+        title: 'Error',
+        message: 'Please fill in all fields',
+        type: 'error'
       });
+      return;
+    }
+
+    if (!formData.agreeToTerms) {
+      setAlertProps({
+        title: 'Error',
+        message: 'Please agree to the terms and conditions',
+        type: 'error'
+      });
+      return;
+    }
+
+    try {
+      const res = await axios.post('http://localhost:8000/api/register', formData, { withCredentials: true });
+      console.log(res.data);
+
+      setAlertProps({
+        title: 'Success',
+        message: 'Registration successful!',
+        type: 'success'
+      });
+    } catch (error) {
+      console.error(error);
+      setAlertProps({
+        title: 'Error',
+        message: 'Something went wrong. Please try again.',
+        type: 'error'
+      });
+    }
+  };
+
+  const inputVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: { opacity: 1, x: 0 }
   };
 
   return (
-    <div className="flex flex-col justify-center font-[sans-serif] sm:h-screen p-4 bg-gray-300">
-      <div className="max-w-md w-full mx-auto border border-gray-300 rounded-2xl p-8 bg-white">
-        <div className="text-center mb-3">
-          <a href="">
-            <img
-              src="https://imgs.search.brave.com/E8bwxfJO_KMM8GuJK6d0UXjoA-D_4eNRTYN-fP3q92I/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9wcmV2/aWV3LnJlZGQuaXQv/d2hhdHMtdGhlLWZv/bnQtdXNlZC1pbi10/aGUtbG9nby12MC14/ZHJzMWZzZDA5Y2Ex/LnBuZz9hdXRvPXdl/YnAmcz04MmViZDU4/NDhlNmNlMTk3ZDg0/MmFlNDI1MzRmNmM0/NDk3MDM2MjAz"
-              alt="logo"
-              className="h-12 inline-block"
-            />
-          </a>
-        </div>
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card className="w-96 shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl text-center">Register</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {alertProps && (
+                <Alert
+                  title={alertProps.title}
+                  message={alertProps.message}
+                  type={alertProps.type}
+                  onClose={() => setAlertProps(null)}
+                />
+              )}
 
-      
-
-        <form>
-          <div className="space-y-6">
-            <div>
-              <label className="text-gray-800 text-sm mb-2 block">Username</label>
-              <input
-                required
-                name="username"
-                type="text"
-                className="text-gray-800 bg-white border border-gray-300 w-full text-sm px-4 py-3 rounded-md outline-blue-500"
-                placeholder="Enter username"
-                onChange={(e) => setUsername(e.target.value)}
-                value={username}
-              />
-            </div>
-
-            <div>
-              <label className="text-gray-800 text-sm mb-2 block">Email Id</label>
-              <input
-                required
-                name="email"
-                type="text"
-                className="text-gray-800 bg-white border border-gray-300 w-full text-sm px-4 py-3 rounded-md outline-blue-500"
-                placeholder="Enter email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="text-gray-800 text-sm mb-2 block">Password</label>
-              <input
-                required
-                name="password"
-                type="password"
-                className="text-gray-800 bg-white border border-gray-300 w-full text-sm px-4 py-3 rounded-md outline-blue-500"
-                placeholder="Enter password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="text-gray-800 text-sm mb-2 block">Date of Birth</label>
-              <input
-                required
-                name="date"
-                type="date"
-                className="text-gray-800 bg-white border border-gray-300 w-full text-sm px-4 py-3 rounded-md outline-blue-500"
-                placeholder="Enter Dob"
-                value={dob}
-                onChange={(e) => setDob(e.target.value)}
-              />
-            </div>
-
-            <div className="flex items-center">
-              <input
-                required
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 shrink-0 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label
-                htmlFor="remember-me"
-                className="text-gray-800 ml-3 block text-sm"
+              <motion.div
+                variants={inputVariants}
+                initial="hidden"
+                animate="visible"
+                transition={{ delay: 0.1 }}
               >
-                I accept the{" "}
-                <a className="text-blue-600 font-semibold hover:underline ml-1">
-                  Terms and Conditions
-                </a>
-              </label>
-            </div>
-          </div>
+                <div className="relative">
+                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="Username"
+                    className="pl-10"
+                    value={formData.username}
+                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  />
+                </div>
+              </motion.div>
 
-          <div className="!mt-12">
-            <button
-              type="button"
-              className="w-full py-3 px-4 text-sm tracking-wider font-semibold rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
-              onClick={submitForm}
-            >
-              Create an account
-            </button>
-            {loading && (
-          <div className="flex justify-center items-center mb-4">
-            <div className="loader ease-linear rounded-full border-4 border-t-4 border-blue-500 h-6 w-6"></div>
-            <span className="ml-3 text-sm text-gray-600">Processing...</span>
-          </div>
-        )}
+              <motion.div
+                variants={inputVariants}
+                initial="hidden"
+                animate="visible"
+                transition={{ delay: 0.2 }}
+              >
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="email"
+                    placeholder="Email"
+                    className="pl-10"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
+              </motion.div>
 
-        {message && (
-          <div
-            className={`text-sm p-3 mb-4 rounded-md ${
-              message.toLowerCase().includes("error")
-                ? "bg-red-100 text-red-600"
-                : "bg-green-100 text-green-600"
-            }`}
-          >
-            {message}
-          </div>
-        )}
-          </div>
-          <p className="text-gray-800 text-sm mt-6 text-center">
-            Already have an account?{" "}
-            <a className="text-blue-600 font-semibold hover:underline ml-1">
-              Login here
-            </a>
-          </p>
-        </form>
-      </div>
+              <motion.div
+                variants={inputVariants}
+                initial="hidden"
+                animate="visible"
+                transition={{ delay: 0.3 }}
+              >
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="password"
+                    placeholder="Password"
+                    className="pl-10"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  />
+                </div>
+              </motion.div>
+
+              <motion.div
+                variants={inputVariants}
+                initial="hidden"
+                animate="visible"
+                transition={{ delay: 0.4 }}
+              >
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="date"
+                    className="pl-10"
+                    value={formData.birthDate} // Updated to birthDate
+                    onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+                  />
+                </div>
+              </motion.div>
+
+              <motion.div
+                variants={inputVariants}
+                initial="hidden"
+                animate="visible"
+                transition={{ delay: 0.5 }}
+                className="flex items-center space-x-2"
+              >
+                <Checkbox
+                  id="terms"
+                  checked={formData.agreeToTerms}
+                  onCheckedChange={(checked) => setFormData({ ...formData, agreeToTerms: checked })}
+                />
+                <label
+                  htmlFor="terms"
+                  className="text-sm text-gray-600 cursor-pointer"
+                >
+                  I agree to the{' '}
+                  <a href="#" className="text-blue-600 hover:underline">
+                    terms and conditions
+                  </a>
+                </label>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+              >
+                <Button
+                  type="submit"
+                  className="w-full"
+                >
+                  Register
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </motion.div>
+            </form>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 };
 
-export default UserRegister;
+export default RegisterForm;

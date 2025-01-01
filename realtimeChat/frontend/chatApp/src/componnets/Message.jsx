@@ -44,7 +44,7 @@ function ChatApp() {
   };
 
   const acceptRequest = (sender) => {
-    const receiver = 'john'; // Replace with dynamic username
+    const receiver = 'john';
     if (socket) {
       socket.emit('accept_message_request', sender, receiver);
     }
