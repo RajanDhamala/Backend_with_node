@@ -320,13 +320,14 @@ const handleUpload = asyncHandler(async (req, res) => {
   })
 
   const searchUser=asyncHandler(async (req,res)=>{
+    console.log("Search User Request Body:",req.body);
     const {search}=req.body;
     const searchedBy=req.user.username
     const filter = search
     ? { username: { $regex: search, $options: "i" } } 
     : {};
 
-  const users = await User.find(filter).select("username profilePic -_id isActive");
+  const users = await User.find(filter).select("username profilePic isActive");
   return res.json(new ApiResponse(200, "Filtered Users", users));
 });
 
@@ -374,7 +375,7 @@ const getUserProfile=asyncHandler (async (req,res)=>{
   const user=await User.findOne({username}).select("username profilePic verifiedUser email birthDate activeChats friends -_id");
 
   if(searchedby===username){
-    return res.send(new ApiResponse(200,"thats ur own profile",))
+    return res.send(new ApiResponse(201,"thats ur own profile",))
   }
 
   if(!user){

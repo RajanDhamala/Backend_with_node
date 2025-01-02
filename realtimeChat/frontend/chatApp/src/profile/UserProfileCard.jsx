@@ -4,8 +4,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import UpdateProfilePicture from "./UpdateProfilePicture";
 import SettingsModal from "./SettingsModal";
 import Alert from "../AiComps/Alert";
+import { useNavigate } from "react-router-dom";
+import {Link} from "react-router-dom";
+
 
 function UserProfileCard() {
+  const navigate=useNavigate();
+  
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -171,6 +176,7 @@ function UserProfileCard() {
               >
                 Settings
               </motion.button>
+              <Link to={'/ChatApp'}>
               <motion.button
                 className="px-4 py-2 bg-purple-500 text-white rounded-full shadow-md hover:bg-purple-600 transition duration-300 text-sm"
                 whileHover={{ scale: 1.05 }}
@@ -178,6 +184,8 @@ function UserProfileCard() {
               >
                 Messages
               </motion.button>
+              </Link>
+              
             </div>
           </div>
           <p className="text-gray-500 mt-4">{userData?.bio || "No biography available."}</p>
@@ -293,7 +301,7 @@ function UserProfileCard() {
                 {friendsList.map((friend, index) => (
                   <motion.div
                     key={index}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg shadow-sm"
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg shadow-sm border-2"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}

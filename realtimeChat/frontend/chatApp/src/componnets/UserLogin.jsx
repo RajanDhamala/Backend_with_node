@@ -1,120 +1,210 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 import axios from "axios";
-
+import { Mail, Lock, Loader2, LogIn, Key, UserPlus, User } from "lucide-react";
+import Alert from '../AiComps/Alert';
+import { useNavigate } from "react-router-dom";
 
 function UserLogin() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    rememberMe: false,
+  });
+  const [alert, setAlert] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  useEffect(() => {
-    console.log("UserLogin component mounted");
-    console.log(import.meta.env.VITE_API_BASE_URL);
-  }, []);
-
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true); 
-    setMessage(""); 
-    axios
-      .post(
-       `${import.meta.env.VITE_API_BASE_URL}/api/login`,
-        {
-          email,
-          password,
-        },
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/login`,
+        formData,
         { withCredentials: true }
-      )
-      .then((response) => {
-        setMessage(response.data.message);
-        setLoading(false); 
-      })
-      .catch((err) => {
-        setMessage(err.response?.data?.message || "An error occurred.");
-        setLoading(false); 
+      );
+      if (response.data.statusCode === 200) {
+        setAlert({
+          type: "success",
+          title: "Success!",
+          message: response.data.message,
+        });
+        setIsSuccess(true);
+      } else {
+        setAlert({
+          type: "error",
+          title: "Login Failed",
+          message: response.data.message || "An error occurred",
+        });
+        setIsSuccess(false);
+      }
+    } catch (err) {
+      setAlert({
+        type: "error",
+        title: "Login Failed",
+        message: err.response?.data?.message || "An error occurred",
       });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <>
-      <div className="top-40 relative">
-        <section>
-          <form
-            className="max-w-sm mx-auto"
-            onSubmit={(e) => handleLogin(e)} 
-          >
-            <div className="mb-5">
-              <label
-                htmlFor="email"
-                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-              >
-                Your email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                id="email"
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="name@example.com"
-                required
-              />
-            </div>
-            <div className="mb-5">
-              <label
-                htmlFor="password"
-                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-              >
-                Your password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                id="password"
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                required
-              />
-            </div>
-            <div className="flex items-start mb-5">
-              <div className="flex items-center h-5">
-                <input
-                  id="remember"
-                  type="checkbox"
-                  className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
-                />
-              </div>
-              <label
-                htmlFor="remember"
-                className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-              >
-                Remember me
-              </label>
-            </div>
-            <button
-              type="submit"
-              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-            >
-              {loading ? "Loading..." : "Submit"}
-            </button>
-          </form>
+  useEffect(() => {
+    if (isSuccess) {
+      const timer = setTimeout(() => {
+        navigate("/UserProfile");
+      }, 2000);
 
-      
-          {message && (
-            <div
-              className={`mt-5 p-3 rounded-lg ${
-                message.includes("error") || message.includes("invalid")
-                  ? "bg-red-500 text-white"
-                  : "bg-green-500 text-white"
-              }`}
+      return () => clearTimeout(timer); 
+    }
+  }, [isSuccess, navigate]);
+
+  if (isSuccess) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-600 to-blue-500"
+      >
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", duration: 0.8 }}
+          className="text-center text-white p-8 rounded-2xl bg-white/10"
+        >
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 360],
+            }}
+            transition={{ duration: 1.5 }}
+            className="mb-6"
+          >
+            <User className="w-20 h-20 mx-auto text-white" />
+          </motion.div>
+          <h2 className="text-4xl font-bold mb-4">Welcome Back!</h2>
+          <p className="text-lg text-white/80">Redirecting you to dashboard...</p>
+        </motion.div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md"
+      >
+        <motion.div
+          whileHover={{ scale: 1.01 }}
+          className="bg-white/10 rounded-2xl shadow-2xl p-8 border border-white/10"
+        >
+          <motion.div className="text-center mb-10">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring" }}
+              className="mb-4"
             >
-              {message}
+              <LogIn className="w-16 h-16 mx-auto text-blue-400" />
+            </motion.div>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+              Welcome Back
+            </h2>
+            <p className="mt-2 text-gray-300">Sign in to continue</p>
+          </motion.div>
+
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="space-y-4">
+              <motion.div
+                initial={{ x: -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                className="relative group"
+              >
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400 w-5 h-5 transition-colors group-focus-within:text-blue-300" />
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Enter your email"
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ x: 50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                className="relative group"
+              >
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400 w-5 h-5 transition-colors group-focus-within:text-blue-300" />
+                <input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Enter your password"
+                />
+              </motion.div>
             </div>
-          )}
-        </section>
-      </div>
-    </>
+
+            <div className="flex items-center justify-between">
+              <label className="flex items-center space-x-2 text-sm text-gray-300 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.rememberMe}
+                  onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
+                  className="w-4 h-4 rounded border-0 bg-white/5 text-blue-500 focus:ring-blue-500"
+                />
+                <span>Remember me</span>
+              </label>
+            </div>
+
+            <motion.button
+              type="submit"
+              disabled={loading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white py-3 rounded-xl font-medium transition-all shadow-lg shadow-blue-500/20"
+            >
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+              ) : (
+                <span className="flex items-center justify-center">
+                  <LogIn className="w-5 h-5 mr-2" />
+                  Sign in
+                </span>
+              )}
+            </motion.button>
+
+            <div className="flex items-center justify-between text-sm text-gray-300">
+              <Link to="/forgot-password" className="flex items-center hover:text-blue-400 transition-colors">
+                <Key className="w-4 h-4 mr-1" />
+                Forgot password?
+              </Link>
+              <Link to="/register" className="flex items-center hover:text-blue-400 transition-colors">
+                <UserPlus className="w-4 h-4 mr-1" />
+                Create account
+              </Link>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>
+
+      <AnimatePresence>
+        {alert && (
+          <Alert
+            type={alert.type}
+            title={alert.title}
+            message={alert.message}
+            onClose={() => setAlert(null)}
+          />
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 

@@ -1,15 +1,26 @@
 import React, { useState, useCallback } from "react";
-import axios from "axios";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { MessageCircle, UserPlus, Search, Mail, Calendar, Users } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { debounce } from "lodash";
-
+import axios from "axios";
+import Alert from "../AiComps/Alert"
+import { data } from "autoprefixer";
 
 const SearchUser = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
+  const [alertProps, setAlertProps] = useState(null);
 
+  const showAlert = (type, title, message) => {
+    setAlertProps({ type, title, message });
+    setTimeout(() => setAlertProps(null), 4000);
+  };
 
   const fetchSearchResults = useCallback(
     debounce(async (query) => {
@@ -18,7 +29,6 @@ const SearchUser = () => {
         return;
       }
       setIsLoading(true);
-      setError(null);
 
       try {
         const { data } = await axios.post(
@@ -27,6 +37,7 @@ const SearchUser = () => {
           { withCredentials: true }
         );
 
+        console.log("Search results:", data.data); 
         if (data.statusCode === 200) {
           setSearchResults(data.data);
         } else {
@@ -34,8 +45,8 @@ const SearchUser = () => {
         }
       } catch (error) {
         console.error("Error fetching search results:", error);
-        setError("Unable to fetch search results. Please try again.");
         setSearchResults([]);
+        showAlert('error',"Error","Error fetching search results:")
       } finally {
         setIsLoading(false);
       }
@@ -43,183 +54,200 @@ const SearchUser = () => {
     []
   );
 
-  const handleSearchChange = (e) => {
-    const query = e.target.value;
-    setSearchTerm(query);
-    fetchSearchResults(query);
-  };
-
-  const handleImageError = (e) => {
-    e.target.src = "/default-avatar.png";
-    e.target.onerror = null;
-  };
-
-
   const handleProfileClick = async (username) => {
     try {
-      const { data } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/getProfile/${username}`, {
-        withCredentials: true,
-      });
-
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/getProfile/${username}`,
+        { withCredentials: true }
+      );
+      console.log("User profile data:", data.data);
       if (data.statusCode === 200) {
         setUserProfile(data.data);
-      } else {
-        setError("User not found");
+        showAlert("success","Success",'fetched the user data')
+      }if(data.statusCode===201){
+        showAlert('warning','Warning',data.message || 'thats who u are')
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
-      setError("Unable to fetch profile. Please try again.");
+      showAlert('error',"Error","Error fetching profile:")
+      setUserProfile(null);
     }
   };
 
-
   const handleSendMessageRequest = async (receiverName) => {
     try {
-      
       const { data } = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/api/sendRequest`,
         { receiverName },
         { withCredentials: true }
       );
-
-      if (data.statusCode === 200) {
-        alert("Message request sent successfully.");
-      } else {
-        alert(data.message || "Failed to send message request.");
-      }
+      showAlert('success','Success',data.message || "Failed to send message request")
     } catch (error) {
       console.error("Error sending message request:", error);
-      setError("Unable to send message request. Please try again.");
+      showAlert("error","Error","Unable to send message request")
     }
   };
 
   const handleStartChat = async (receiver) => {
-    console.log("Starting chat with:", receiver);
-    
-    const initialMessage = encodeURIComponent("Welcome to the free and openSource! chat app");
-  
+    const initialMessage = encodeURIComponent("Welcome to the chat app!");
     try {
       const { data } = await axios.get(
         `${import.meta.env.VITE_API_BASE_URL}/api/chat/${receiver}/${initialMessage}`,
         { withCredentials: true }
       );
-      if (data.statusCode === 201) {
-        alert("Chat initialized successfully.");
-      } else if (data.statusCode === 200) {
-        alert("Chat already exists.");
-      } else {
-        setError("Unexpected response. Please try again.");
+      {
+        data.statusCode === 201 ?  showAlert('success','Success',data.message || "intilized the chat database"):
+        showAlert('error','Error',data.message || "chat already exist" )
       }
+    
     } catch (error) {
-      console.error("Error starting chat:", error);
-  
-      if (error.response && error.response.status === 404) {
-        setError("Sender or receiver not found.");
-      } else if (error.response && error.response.status === 400) {
-        setError("Invalid request. Ensure all fields are filled.");
-      } else {
-        setError("Unable to start chat. Please try again.");
-      }
+      showAlert('error','error',data.message || 'error while creating chat')
     }
   };
-  
+
   return (
-    <div className="w-full max-w-md mx-auto mt-10">
-      <input
-        type="text"
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-        placeholder="Search users..."
-        value={searchTerm}
-        onChange={handleSearchChange}
-      />
-
-      {isLoading && <div className="text-gray-500 text-sm mt-2">Loading...</div>}
-      {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-
-      <ul className="mt-4 border border-gray-200 rounded-lg">
-        {searchResults.length > 0 ? (
-          searchResults.map((user, index) => (
-            <li
-              key={index}
-              className="p-2 border-b border-gray-100 last:border-none cursor-pointer transition hover:bg-gray-300"
-              onClick={() => handleProfileClick(user.username)}
-            >
-              <div className="flex items-center space-x-4">
-                <img
-                  src={user.profilePic || "/default-avatar.png"}
-                  alt={`${user.username}'s profile`}
-                  className="w-10 h-10 rounded-full object-cover"
-                  onError={handleImageError}
-                />
-                <div className="flex flex-col">
-                  <span>{user.username}</span>
-                  <div className="flex items-center">
-                    <span
-                      className={`w-3 h-3 rounded-full mr-2 ${
-                        user.isActive ? "bg-green-500" : "bg-gray-400"
-                      }`}
-                    ></span>
-                    <span className="text-sm text-gray-500">
-                      {user.isActive ? "Active" : "Offline"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </li>
-          ))
-        ) : (
-          !isLoading && <li className="p-2 text-gray-500 text-center">No results found</li>
-        )}
-      </ul>
-
-      {userProfile && (
-        <div className="mt-6 p-6 border-t border-gray-200 bg-white rounded-lg shadow-lg">
-          <div className="flex items-center space-x-4">
-            <img
-              src={userProfile.profilePic || "/default-avatar.png"}
-              alt={`${userProfile.username}'s profile`}
-              className="w-32 h-32 rounded-full object-cover"
-              onError={handleImageError}
-            />
-            <div>
-              <h3 className="text-2xl font-semibold">{userProfile.username}</h3>
-              <p className="text-sm text-gray-500">Email: {userProfile.email}</p>
-              <p className="text-sm text-gray-500">
-                Birthdate: {new Date(userProfile.birthDate).toLocaleDateString()}
-              </p>
-              <p className="text-sm text-gray-500">Active Chats: {userProfile.activeChats}</p>
-              <p className="text-sm text-gray-500">Friends: {userProfile.friends}</p>
-              <div className="flex items-center mt-2">
-                <span
-                  className={`w-3 h-3 rounded-full mr-2 ${
-                    userProfile.isActive ? "bg-green-500" : "bg-gray-400"
-                  }`}
-                ></span>
-                <span className="text-sm text-gray-500">
-                  {userProfile.isActive ? "Active" : "Offline"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 flex space-x-4 justify-center">
-            <button
-              onClick={() => handleSendMessageRequest(userProfile.username)}
-              className="py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
-            >
-              Send Message Request
-            </button>
-            <button
-              onClick={(e) => handleStartChat(userProfile.username)}
-              className="py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 transition"
-            >
-              Start Chat
-            </button>
-          </div>
-          
-        </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen p-4 bg-gradient-to-br from-blue-950 to-blue-900"
+    >
+        {alertProps && (
+        <Alert
+          type={alertProps.type}
+          title={alertProps.title}
+          message={alertProps.message}
+          onClose={() => setAlertProps(null)}
+        />
       )}
-    </div>
+      <div className="max-w-4xl mx-auto space-y-6">
+        <Card className="relative overflow-hidden bg-blue-950/50 border-blue-500/20">
+          <CardContent className="pt-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-blue-400" />
+              <Input
+                className="pl-10 bg-blue-900/30 border-blue-500/30 text-white placeholder:text-blue-400/70"
+                placeholder="Search users..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  fetchSearchResults(e.target.value);
+                }}
+              />
+            </div>
+
+            <AnimatePresence>
+              {isLoading && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex justify-center py-4"
+                >
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400" />
+                </motion.div>
+              )}
+
+              <motion.div layout className="space-y-2 mt-4">
+                {searchResults.map((user) => (
+                  <motion.div
+                    key={user._id || user.username}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="p-4 rounded-lg bg-blue-900/30 hover:bg-blue-800/30 cursor-pointer border border-blue-500/20"
+                    onClick={() => handleProfileClick(user.username)}
+                  >
+                    <div className="flex items-center gap-4">
+                      <Avatar>
+                        <AvatarImage src={user.profilePic || "/default-profile.png"} />
+                        <AvatarFallback className="bg-blue-700 text-white">
+                          {user.username[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="font-medium text-white">{user.username}</p>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`h-2 w-2 rounded-full ${user.isActive ? "bg-green-400" : "bg-gray-400"}`}
+                          />
+                          <span className="text-sm text-blue-300">
+                            {user.isActive ? "Active" : "Offline"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          </CardContent>
+        </Card>
+
+        <AnimatePresence>
+          {userProfile && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <Card className="bg-blue-950/50 border-blue-500/20">
+                <CardContent className="p-6">
+                  <div className="flex flex-col md:flex-row gap-6">
+                    <Avatar className="w-32 h-32">
+                      <AvatarImage src={userProfile.profilePic || "/default-profile.png"} />
+                      <AvatarFallback className="bg-blue-700 text-white">
+                        {userProfile.username[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="space-y-4 flex-1">
+                      <div>
+                        <h3 className="text-2xl font-bold text-white">{userProfile.username}</h3>
+                        <div className="flex items-center gap-2 text-blue-300">
+                          <Mail className="w-4 h-4" />
+                          <span>{userProfile.email}</span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-blue-300">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          <span>{new Date(userProfile.birthDate).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MessageCircle className="w-4 h-4" />
+                          <span>Active Chats: {userProfile.activeChats}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          <span>Friends: {userProfile.friends}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-4">
+                        <Button
+                          className="flex-1 bg-blue-600 hover:bg-blue-700"
+                          onClick={() => handleSendMessageRequest(userProfile.username)}
+                        >
+                          <UserPlus className="w-4 h-4 mr-2" />
+                          Send Request
+                        </Button>
+                        <Button
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                          variant="secondary"
+                          onClick={() => handleStartChat(userProfile.username)}
+                        >
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          Start Chat
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
   );
 };
 

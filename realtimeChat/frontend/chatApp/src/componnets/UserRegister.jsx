@@ -1,202 +1,174 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
+import { Mail, Lock, User, Calendar, ArrowRight, CheckCircle } from "lucide-react";
 import Alert from '../AiComps/Alert';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { User, Mail, Lock, ArrowRight, Calendar } from 'lucide-react';
-import axios from 'axios';
 
-const RegisterForm = () => {
+
+function RegisterForm() {
+  useEffect(()=>{
+    
+  },[])
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    birthDate: '', // Changed from dateOfBirth to birthDate
-    agreeToTerms: false
+    username: "",
+    email: "",
+    password: "",
+    birthDate: "",
   });
-  const [alertProps, setAlertProps] = useState(null);
+  const [alert, setAlert] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    if (!formData.username || !formData.email || !formData.password || !formData.birthDate) {
-      setAlertProps({
-        title: 'Error',
-        message: 'Please fill in all fields',
-        type: 'error'
-      });
-      return;
-    }
-
-    if (!formData.agreeToTerms) {
-      setAlertProps({
-        title: 'Error',
-        message: 'Please agree to the terms and conditions',
-        type: 'error'
-      });
-      return;
-    }
-
+    setLoading(true);
     try {
-      const res = await axios.post('http://localhost:8000/api/register', formData, { withCredentials: true });
-      console.log(res.data);
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/api/register`,
+        formData,
+        { withCredentials: true }
+      );
+      console.log(response.data)
 
-      setAlertProps({
-        title: 'Success',
-        message: 'Registration successful!',
-        type: 'success'
+      if(response.data.statusCode===200){
+        setAlert({
+          type: 'success',
+          title: 'Success!',
+          message: 'Registration successful!'
+        });
+        setIsSuccess(true);
+      }else{
+        setAlert({
+          type: 'error',
+          title: 'Registration Failed',
+          message: response.data.message || "An error occurred"
+        })
+      }
+    } catch (err) {
+      setAlert({
+        type: 'error',
+        title: 'Registration Failed',
+        message: err.response?.data?.message || "An error occurred"
       });
-    } catch (error) {
-      console.error(error);
-      setAlertProps({
-        title: 'Error',
-        message: 'Something went wrong. Please try again.',
-        type: 'error'
-      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const inputVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0 }
-  };
+  if (isSuccess) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-600 to-blue-500"
+      >
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="text-center text-white p-8 rounded-2xl"
+        >
+          <motion.div
+            animate={{ 
+              scale: [1, 1.2, 1],
+              rotate: [0, 360]
+            }}
+            transition={{ duration: 1.5 }}
+            className="mb-6"
+          >
+            <CheckCircle className="w-20 h-20 mx-auto text-white" />
+          </motion.div>
+          <h2 className="text-4xl font-bold mb-4">Welcome Aboard!</h2>
+          <p className="text-lg text-white/80">Your account has been created successfully.</p>
+        </motion.div>
+      </motion.div>
+    );
+  }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <motion.div
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900">
+      <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
       >
-        <Card className="w-96 shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">Register</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {alertProps && (
-                <Alert
-                  title={alertProps.title}
-                  message={alertProps.message}
-                  type={alertProps.type}
-                  onClose={() => setAlertProps(null)}
+        <motion.div className="bg-white/5 rounded-2xl shadow-2xl p-8 border border-white/10">
+          <motion.div className="text-center mb-10">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="mb-4"
+            >
+              <User className="w-16 h-16 mx-auto text-blue-400" />
+            </motion.div>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+              Create Account
+            </h2>
+            <p className="mt-2 text-gray-300">Join our community today</p>
+          </motion.div>
+
+          <form onSubmit={handleRegister} className="space-y-6">
+            <div className="space-y-4">
+              {[
+                { icon: User, type: "text", placeholder: "Username", name: "username" },
+                { icon: Mail, type: "email", placeholder: "Email", name: "email" },
+                { icon: Lock, type: "password", placeholder: "Password", name: "password" },
+                { icon: Calendar, type: "date", placeholder: "Birth Date", name: "birthDate" }
+              ].map((field, index) => (
+                <motion.div 
+                  key={field.name}
+                  initial={{ x: index % 2 === 0 ? -50 : 50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="relative group"
+                >
+                  <field.icon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400 w-5 h-5 transition-colors group-focus-within:text-blue-300" />
+                  <input
+                    type={field.type}
+                    value={formData[field.name]}
+                    onChange={(e) => setFormData({...formData, [field.name]: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder={field.placeholder}
+                  />
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.button
+              type="submit"
+              disabled={loading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white py-3 rounded-xl font-medium transition-all shadow-lg shadow-blue-500/20"
+            >
+              {loading ? (
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                  className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mx-auto"
                 />
+              ) : (
+                <span className="flex items-center justify-center">
+                  Create Account
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </span>
               )}
-
-              <motion.div
-                variants={inputVariants}
-                initial="hidden"
-                animate="visible"
-                transition={{ delay: 0.1 }}
-              >
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    type="text"
-                    placeholder="Username"
-                    className="pl-10"
-                    value={formData.username}
-                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  />
-                </div>
-              </motion.div>
-
-              <motion.div
-                variants={inputVariants}
-                initial="hidden"
-                animate="visible"
-                transition={{ delay: 0.2 }}
-              >
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    type="email"
-                    placeholder="Email"
-                    className="pl-10"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  />
-                </div>
-              </motion.div>
-
-              <motion.div
-                variants={inputVariants}
-                initial="hidden"
-                animate="visible"
-                transition={{ delay: 0.3 }}
-              >
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    type="password"
-                    placeholder="Password"
-                    className="pl-10"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  />
-                </div>
-              </motion.div>
-
-              <motion.div
-                variants={inputVariants}
-                initial="hidden"
-                animate="visible"
-                transition={{ delay: 0.4 }}
-              >
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    type="date"
-                    className="pl-10"
-                    value={formData.birthDate} // Updated to birthDate
-                    onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                  />
-                </div>
-              </motion.div>
-
-              <motion.div
-                variants={inputVariants}
-                initial="hidden"
-                animate="visible"
-                transition={{ delay: 0.5 }}
-                className="flex items-center space-x-2"
-              >
-                <Checkbox
-                  id="terms"
-                  checked={formData.agreeToTerms}
-                  onCheckedChange={(checked) => setFormData({ ...formData, agreeToTerms: checked })}
-                />
-                <label
-                  htmlFor="terms"
-                  className="text-sm text-gray-600 cursor-pointer"
-                >
-                  I agree to the{' '}
-                  <a href="#" className="text-blue-600 hover:underline">
-                    terms and conditions
-                  </a>
-                </label>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-              >
-                <Button
-                  type="submit"
-                  className="w-full"
-                >
-                  Register
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </motion.div>
-            </form>
-          </CardContent>
-        </Card>
+            </motion.button>
+          </form>
+        </motion.div>
       </motion.div>
+
+      <AnimatePresence>
+        {alert && (
+          <Alert
+            type={alert.type}
+            title={alert.title}
+            message={alert.message}
+            onClose={() => setAlert(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
-};
+}
 
 export default RegisterForm;

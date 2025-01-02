@@ -5,7 +5,6 @@ import moment from 'moment';
 import Cookies from 'js-cookie';
 import { Send, Search } from 'lucide-react';
 
-// Custom hook for managing socket events
 const useSocket = (url) => {
   const socketRef = useRef(null);
 
@@ -54,7 +53,7 @@ const MessageBubble = ({ message, isCurrentUser, senderImage, timestamp, usernam
         className={`px-4 py-2 rounded-2xl ${
           isCurrentUser
             ? 'bg-blue-500 text-white rounded-br-none'
-            : 'bg-gray-200 text-gray-800 rounded-bl-none'
+            : 'bg-green-500 text-white rounded-bl-none'
         }`}
       >
         {message.match(/(https?:\/\/[^\s]+)/g) ? (

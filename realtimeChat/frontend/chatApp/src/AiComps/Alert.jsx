@@ -11,10 +11,10 @@ const Alert = ({
   duration = 5000 
 }) => {
   const alertStyles = {
-    success: 'bg-green-600 text-white shadow-lg shadow-green-500/20',
-    error: 'bg-red-600 text-white shadow-lg shadow-red-500/20',
-    warning: 'bg-amber-500 text-white shadow-lg shadow-amber-500/20',
-    info: 'bg-blue-600 text-white shadow-lg shadow-blue-500/20',
+    success: 'bg-green-600 text-white shadow-lg shadow-green-500/20 ',
+    error: 'bg-red-600 text-white shadow-lg shadow-red-500/20 ',
+    warning: 'bg-amber-500 text-white shadow-lg shadow-amber-500/20 ',
+    info: 'bg-blue-600 text-white shadow-lg shadow-blue-500/20 ',
   };
 
   const icons = {
@@ -40,7 +40,7 @@ const Alert = ({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 50, scale: 0.9 }}
       transition={{ duration: 0.2, type: "spring", stiffness: 200, damping: 20 }}
-      className={`fixed top-4 right-4 z-50 w-96 ${className}`}
+      className={`fixed top-4 right-4 z-50 w-96 rounded-lg ${className}`}
     >
       <motion.div
         whileHover={{ scale: 1.02 }}
