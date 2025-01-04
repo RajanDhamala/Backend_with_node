@@ -128,3 +128,4 @@ realtimeChat/frontend/chatApp/.gitignore
 realtimeChat/frontend/chatApp/.gitignore
 realtimeChat/frontend/chatApp/.gitignore
 .gitignore
+realtimeChat/frontend/chatApp/src/Shocket/AiAnalysis.jsx

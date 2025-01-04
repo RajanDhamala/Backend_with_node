@@ -5,6 +5,7 @@ import  Checkfriedshipfrom from '../utils/ChatUtils.js'
 import Chat from '../models/Group.Model.js';
 import OpenAI from "openai";
 import dotenv from 'dotenv'
+import {ChatwithAi} from '../utils/handelGeminai.js'
 
 dotenv.config()
 
@@ -460,6 +461,22 @@ const createChatDatabase = asyncHandler(async (req, res) => {
     
    })
 
+   const ChatwithAi2=asyncHandler(async (req,res)=>{
+    const {message}=req.body
+    const username=req.user.username
+
+    console.log(message)
+
+    if(!message || !username){
+        return res.send(
+            new ApiResponse(400,'Invalid request data')
+        )
+    }
+    const resp=ChatwithAi(message,username)
+    return res.send(new ApiResponse(200,'response',res))
+
+   })
+
 export { 
     SendMessageRequest,
     SeeFriendRequests,
@@ -474,5 +491,6 @@ export {
     validateAllActiveChats,
     handelLocalStorage,
     getAllActiveUsers,
-    OpenAi
+    OpenAi,
+    ChatwithAi2
  };

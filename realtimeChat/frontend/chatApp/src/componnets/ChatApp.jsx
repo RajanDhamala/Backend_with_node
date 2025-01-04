@@ -57,7 +57,7 @@ const MessageBubble = ({ message, isCurrentUser, senderImage, timestamp, usernam
         }`}
       >
         {message.match(/(https?:\/\/[^\s]+)/g) ? (
-          <a href={message} target="_blank" rel="noopener noreferrer" className="underline">
+          <a href={message} target="_blank" rel="noopener noreferrer" className="underline text-wrap">
             {message}
           </a>
         ) : (

@@ -1,6 +1,8 @@
-import {GoogleGenerativeAI,SchemaType } from '@google/generative-ai';
+import {GoogleGenerativeAI} from '@google/generative-ai';
 import dotenv from 'dotenv';
 import fs from 'fs';
+import { stringify } from 'flatted';
+
 
 dotenv.config();
 
@@ -54,7 +56,7 @@ const handelImg = async (prompt, path) => {
     const imagePart = fileToGenerativePart(path, 'image/jpeg');
   
     try {
-      const result = await model.generateContent([prompt, imagePart,'  ']);
+      const result = await model.generateContent([prompt, imagePart,'']);
       console.log(result.response.text());
       return result.response.text(); 
     } catch (error) {
@@ -65,8 +67,6 @@ const handelImg = async (prompt, path) => {
 
   const AiJsonResponse = async () => {
     const genAI = new GoogleGenerativeAI(process.env.API_KEY);
-  
-    // Enhanced schema to include more details about fruits
     const schema = {
       description: "List of fruits with their details",
       type: "array",
@@ -117,10 +117,35 @@ const handelImg = async (prompt, path) => {
       console.error("Error generating fruit data:", error);
     }
   };
-    
+
+const ChatwithAi = async (message, { user }, chats = 'no prev chats') => {
+  if (!message || !user || !chats) {
+    return { error: "Invalid request data." };
+  }
+
+  const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-pro",
+  });
+
+  try {
+    const result = await model.generateContent(message);
+    const responseText = result.response.text();
+    console.log(responseText);
+    const resultString = stringify(result);
+    console.log(resultString);
+
+    return responseText;
+
+  } catch (error) {
+    console.error("Error in ChatwithAi:", error);
+    throw error;
+  }
+};
 
 export {
     handelText,
     handelImg,
-    AiJsonResponse
+    AiJsonResponse,
+    ChatwithAi
   };
