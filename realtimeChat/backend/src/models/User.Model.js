@@ -57,7 +57,10 @@ const userSchema = new Schema({
             from: { type: Schema.Types.ObjectId, ref: 'Users' },
             timestamp: { type: Date, default: Date.now }
         }
-    ]
+    ],role:{
+        type:String,
+        default:"user"
+    }
 }, { timestamps: true });
 
 const User = mongoose.model('Users', userSchema);

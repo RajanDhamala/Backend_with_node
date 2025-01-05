@@ -147,7 +147,9 @@ const ChatApp = () => {
         res.data.data.forEach((chat) => {
           storeChats(chat._id, chat.messages);
         });
-        setLocalData(res.data.data);
+        console.log(res.data);
+        setLocalData((prev)=>res.data.data);
+        console.log(res.data.data);
       } catch (error) {
         console.error('Error fetching chats:', error);
       }
