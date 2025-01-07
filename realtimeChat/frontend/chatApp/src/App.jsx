@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes, useLocation, useNavigate, Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X, LogIn, UserPlus, User, MessageSquare, Brain, Search, LogOut, Home } from "lucide-react";
+import { Menu, X, LogIn, UserPlus, User, MessageSquare, Brain, Search, LogOut, Home} from "lucide-react";
 import axios from "axios";
 import UserLogin from "./componnets/UserLogin";
 import UserRegister from "./componnets/UserRegister";
@@ -10,6 +10,8 @@ import AiAnalysis from "./Shocket/AiAnalysis";
 import SearchUser from "./componnets/SearchUser";
 import UserProfileCard from "./profile/UserProfileCard";
 import { useState } from "react";
+import AdminPannel from "./AdminPannel/AminPannel";
+
 
 function MobileMenu({ isOpen, onClose, LogoutUser, navigate }) {
   const menuItems = [
@@ -20,6 +22,7 @@ function MobileMenu({ isOpen, onClose, LogoutUser, navigate }) {
     { name: "Chat", path: "/ChatApp", icon: MessageSquare },
     { name: "AI Analysis", path: "/aiAnalysis", icon: Brain },
     { name: "Search Users", path: "/searchUser", icon: Search },
+    {name:'Admin Pannel' ,path:'/AdminPannel',icon:Home}
   ];
 
   return (
@@ -120,6 +123,7 @@ function AppContent() {
     { name: "Chat", path: "/ChatApp" },
     { name: "AI Analysis", path: "/aiAnalysis" },
     { name: "Search Users", path: "/searchUser" },
+    {name:'Admin Pannel' ,path:'/AdminPannel'}
   ];
 
   const LogoutUser = async () => {
@@ -246,6 +250,7 @@ function AppContent() {
               <Route path="/ChatApp" element={<ChatApp />} />
               <Route path="/aiAnalysis" element={<AiAnalysis />} />
               <Route path="/searchUser" element={<SearchUser />} />
+              <Route path="/AdminPannel/*" element={<AdminPannel/>} />
             </Routes>
           </motion.div>
         </AnimatePresence>

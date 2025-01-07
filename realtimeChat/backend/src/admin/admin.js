@@ -1,9 +1,10 @@
 import AdminJS from "adminjs";
 import AdminJSExpress from "@adminjs/express";
 import * as AdminJSMongoose from "@adminjs/mongoose"; // Corrected import
-import mongoose from "mongoose";
 import User from "../models/User.Model.js";
 import  Chat  from "../models/Group.Model.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 AdminJS.registerAdapter(AdminJSMongoose);
 
@@ -18,7 +19,7 @@ const adminJs = new AdminJS({
 const adminRouter = AdminJSExpress.buildAuthenticatedRouter(adminJs, {
     authenticate: async (email, password) => {
       const admin = await User.findOne({ email, role: "admin" });
-      if (admin && password=='admin') {
+      if (admin && password==process.env.ADMIN_PASS) {
         return admin;
       }
       return null;
@@ -30,5 +31,5 @@ const adminRouter = AdminJSExpress.buildAuthenticatedRouter(adminJs, {
   });
   
 
-// Export the admin router and instance
+
 export { adminJs, adminRouter };

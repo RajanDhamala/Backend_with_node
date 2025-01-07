@@ -129,3 +129,6 @@ realtimeChat/frontend/chatApp/.gitignore
 realtimeChat/frontend/chatApp/.gitignore
 .gitignore
 realtimeChat/frontend/chatApp/src/Shocket/AiAnalysis.jsx
+realtimeChat/backend/src/middleware/Admin/JWTAdmin.js
+realtimeChat/backend/src/models/Admin.Model.js
+realtimeChat/backend/src/routes/admin.routes.js

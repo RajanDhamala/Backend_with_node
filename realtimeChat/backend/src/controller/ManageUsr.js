@@ -35,13 +35,11 @@ const  registerUser= asyncHandler(async (req, res) => {
   }
 
   try {
-    const userRole = username === "rajandhamala" ? 'admin' : 'user';
     const newUser = new User({
       username,
       email,
       password: hashedPassword,
       birthDate,
-      role: userRole, 
     });
     const savedUsr = await newUser.save();
     console.log("Saved User:", savedUsr);

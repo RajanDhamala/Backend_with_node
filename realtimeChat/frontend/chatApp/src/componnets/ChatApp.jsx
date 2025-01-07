@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef,useMemo } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
 import moment from 'moment';
@@ -16,7 +16,6 @@ const useSocket = (url) => {
   return socketRef.current;
 };
 
-// Custom hook for managing chat storage
 const useChatStorage = () => {
   const storeChats = (chatId, messages) => {
     try {
@@ -39,7 +38,6 @@ const useChatStorage = () => {
   return { storeChats, getChats };
 };
 
-// Message bubble component
 const MessageBubble = ({ message, isCurrentUser, senderImage, timestamp, username }) => (
   <div className={`flex items-end gap-2 mb-4 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}>
     <img
@@ -65,15 +63,16 @@ const MessageBubble = ({ message, isCurrentUser, senderImage, timestamp, usernam
         )}
       </div>
       <div className="text-xs text-gray-400 mt-1">
-        {moment(timestamp).format('hh:mm A')}
+        {moment(timestamp).format('hh:mm: A')}
       </div>
     </div>
   </div>
 );
 
-// Chat list item component
-const ChatListItem = ({ chat, loginUser, selectedChat, onSelect }) => {
-  const otherParticipant = chat.participants.find(p => p?.username !== loginUser);
+
+const ChatListItem = React.memo(({ chat, loginUser, selectedChat, onSelect }) => {
+  const otherParticipant = chat.participants.find(p =>
+    p?.username !== loginUser);
   if (!otherParticipant) return null;
 
   const isSelected = selectedChat === otherParticipant.username;
@@ -101,7 +100,7 @@ const ChatListItem = ({ chat, loginUser, selectedChat, onSelect }) => {
       </div>
     </div>
   );
-};
+});
 
 const ChatApp = () => {
   const [message, setMessage] = useState('');
@@ -147,24 +146,22 @@ const ChatApp = () => {
         res.data.data.forEach((chat) => {
           storeChats(chat._id, chat.messages);
         });
-        console.log(res.data);
         setLocalData((prev)=>res.data.data);
-        console.log(res.data.data);
       } catch (error) {
         console.error('Error fetching chats:', error);
       }
     };
 
     fetchChats();
-  }, [loginUser]);
+  }, []);
 
   useEffect(() => {
     const currentUser = Cookies.get('CurrentUser');
     if (currentUser) {
       try {
         const userObject = JSON.parse(currentUser);
-        setLoginUser(userObject.username1 || 'Guest');
-        setLoginUserImage(userObject.profilepic || '/default-avatar.png');
+        setLoginUser(userObject.username || 'Guest');
+        setLoginUserImage(userObject.profilePic || '/default-avatar.png');
       } catch (error) {
         console.error('Error parsing CurrentUser cookie:', error);
       }
@@ -231,22 +228,17 @@ const ChatApp = () => {
     const newMessage = e.target.value;
     setMessage(newMessage);
 
-    clearTimeout(debounceTimer.current);
-
+    clearTimeout(typingTimeout.current);
+  
     if (!amTyping) {
       setAmTyping(true);
       socket.emit('typing', { friendUsername: selectedChat });
     }
-
-    debounceTimer.current = setTimeout(() => {
-      clearTimeout(typingTimeout.current);
-      typingTimeout.current = setTimeout(() => {
-        if (amTyping) {
-          setAmTyping(false);
-          socket.emit('stop_typing', { friendUsername: selectedChat });
-        }
-      }, 1300);
-    }, 200);
+  
+    typingTimeout.current = setTimeout(() => {
+      setAmTyping(false);
+      socket.emit('stop_typing', { friendUsername: selectedChat });
+    }, 1300);
   };
 
   const scrollToBottom = () => {

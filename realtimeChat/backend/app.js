@@ -3,7 +3,8 @@ import dotenv from "dotenv"
 import cookieParser from "cookie-parser"
 import cors from "cors"
 import route from "./src/routes/user.routes.js"
-import  {adminJs, adminRouter}  from "./src/admin/admin.js";
+// import  {adminJs, adminRouter}  from "./src/admin/admin.js";
+import AdminRoute from "./src/routes/admin.routes.js"
 
 dotenv.config()
 
@@ -14,13 +15,14 @@ app.use(cookieParser())
 app.use(cors({
     origin: [
       'http://localhost:5173',
+      'http://192.168.100.201:5173',
     ],
     credentials: true,
   }));
-  
 
 app.use("/api",route)
-app.use(adminJs.options.rootPath, adminRouter);
+app.use('/admin',AdminRoute)
+
 
 
 export default app
